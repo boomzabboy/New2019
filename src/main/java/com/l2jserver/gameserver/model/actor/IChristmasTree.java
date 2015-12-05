@@ -16,16 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.l2jserver.gameserver.ai;
-
-import com.l2jserver.gameserver.model.actor.L2Character;
+package com.l2jserver.gameserver.model.actor;
 
 /**
  * @author HorridoJoho
- * @param <T> the character type
  */
-public interface ICharacterAi<T extends L2Character> extends Ctrl
+public interface IChristmasTree extends INpc
 {
-	@Override
-	T getActor();
+
 }

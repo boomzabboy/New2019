@@ -18,15 +18,14 @@
  */
 package com.l2jserver.gameserver.ai;
 
+import com.l2jserver.gameserver.model.actor.INpc;
 import com.l2jserver.gameserver.model.actor.L2Character;
-import com.l2jserver.gameserver.model.actor.L2Npc;
 import com.l2jserver.gameserver.model.items.instance.L2ItemInstance;
 
 /**
  * @author HorridoJoho
- * @param <T> the npc type
  */
-public interface INpcAi<T extends L2Npc> extends ICharacterAi<T>
+public interface INpcAi extends IWorldCharacterAi
 {
 	/**
 	 * Suspends timers and actions of this ai.
@@ -63,4 +62,7 @@ public interface INpcAi<T extends L2Npc> extends ICharacterAi<T>
 	public void addGetItemIntend(L2ItemInstance item, float priority);
 	
 	public void addGetItemIntendEx(int itemObjectId, float priority);
+	
+	@Override
+	INpc getActorEx();
 }
