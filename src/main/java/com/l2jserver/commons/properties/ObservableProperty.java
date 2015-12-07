@@ -18,14 +18,16 @@
  */
 package com.l2jserver.commons.properties;
 
+import java.util.function.BiConsumer;
+
 /**
  * @author HorridoJoho
  * @param <T>
  */
-public class ObservableProperty<T> extends Property<T>
+public final class ObservableProperty<T> extends Property<T>
 {
-	private final IPropertyObserver<T> _changingObserver;
-	private final IPropertyObserver<T> _changedObserver;
+	private final BiConsumer<T, T> _changingObserver;
+	private final BiConsumer<T, T> _changedObserver;
 	
 	public ObservableProperty(T initialValue)
 	{
@@ -34,7 +36,7 @@ public class ObservableProperty<T> extends Property<T>
 		_changedObserver = null;
 	}
 	
-	public ObservableProperty(T initialValue, IPropertyObserver<T> changingObserver, IPropertyObserver<T> changedObserver)
+	public ObservableProperty(T initialValue, BiConsumer<T, T> changingObserver, BiConsumer<T, T> changedObserver)
 	{
 		super(initialValue);
 		_changingObserver = changingObserver;
@@ -48,7 +50,7 @@ public class ObservableProperty<T> extends Property<T>
 		{
 			try
 			{
-				_changingObserver.observe(get(), newValue);
+				_changingObserver.accept(get(), newValue);
 			}
 			catch (Exception e)
 			{
@@ -60,7 +62,7 @@ public class ObservableProperty<T> extends Property<T>
 		{
 			try
 			{
-				_changedObserver.observe(get(), newValue);
+				_changedObserver.accept(get(), newValue);
 			}
 			catch (Exception e)
 			{

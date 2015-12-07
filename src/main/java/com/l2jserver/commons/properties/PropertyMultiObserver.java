@@ -19,12 +19,13 @@
 package com.l2jserver.commons.properties;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.BiConsumer;
 
 /**
  * @author HorridoJoho
  * @param <T> the property type
  */
-public class PropertyMultiObserver<T> implements IPropertyObserver<T>
+public final class PropertyMultiObserver<T> implements BiConsumer<T, T>
 {
 	private final ConcurrentLinkedQueue<IPropertyObserver<T>> _observers;
 	
@@ -44,7 +45,7 @@ public class PropertyMultiObserver<T> implements IPropertyObserver<T>
 	}
 	
 	@Override
-	public void observe(T oldValue, T newValue)
+	public void accept(T oldValue, T newValue)
 	{
 		for (IPropertyObserver<T> observer : _observers)
 		{
@@ -58,4 +59,5 @@ public class PropertyMultiObserver<T> implements IPropertyObserver<T>
 			}
 		}
 	}
+	
 }

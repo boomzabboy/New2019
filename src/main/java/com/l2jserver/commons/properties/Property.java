@@ -25,33 +25,47 @@ package com.l2jserver.commons.properties;
 public class Property<T>
 {
 	private T _value;
-	private boolean _dirty;
+	private boolean _selfDirty;
+	private boolean _otherDirty;
 	
 	public Property(T initialValue)
 	{
 		_value = initialValue;
-		_dirty = true;
+		_selfDirty = true;
+		_otherDirty = true;
 	}
 	
 	public void set(T newValue)
 	{
 		_value = newValue;
-		_dirty = true;
+		_selfDirty = true;
+		_otherDirty = true;
 	}
 	
-	public T get()
+	public final T get()
 	{
 		return _value;
 	}
 	
-	public T consume()
+	public final T consumeSelf()
 	{
-		_dirty = false;
+		_selfDirty = false;
 		return get();
 	}
 	
-	public final boolean isDirty()
+	public final T consumeOther()
 	{
-		return _dirty;
+		_otherDirty = false;
+		return get();
+	}
+	
+	public final boolean isSelfDirty()
+	{
+		return _selfDirty;
+	}
+	
+	public final boolean isOtherDirty()
+	{
+		return _otherDirty;
 	}
 }
