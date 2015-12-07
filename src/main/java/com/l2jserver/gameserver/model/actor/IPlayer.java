@@ -44,23 +44,23 @@ public interface IPlayer extends IWorldCharacter
 	 * @return true: player had enough cp and it got reduced<br>
 	 *         false: not enough cp
 	 */
-	boolean consumeCp(int amount);
+	boolean consumeCp(double amount);
 	
 	/**
 	 * Modify the cp of this player.
 	 * @param mod the modificator
 	 */
-	void modifyCp(int mod);
+	void modifyCp(double mod);
 	
 	/**
 	 * @return the current cp of this player which can range from 0 to max cp.
 	 */
-	int getCp();
+	double getCp();
 	
 	/**
 	 * @return the max cp of this player
 	 */
-	int getMaxCp();
+	double getMaxCp();
 	
 	/**
 	 * @return the ai of this player

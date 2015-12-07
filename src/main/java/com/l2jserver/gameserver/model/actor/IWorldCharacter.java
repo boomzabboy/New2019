@@ -38,24 +38,24 @@ public interface IWorldCharacter extends IWorldSpawnable, IWorldLiving
 	 * @param amount the amount to consume
 	 * @return true when mp is enough, false otherwise
 	 */
-	boolean consumeMp(int amount);
+	boolean consumeMp(double amount);
 	
 	/**
 	 * Modify the mp of this world character.
 	 * @param mod the modificator
 	 */
-	void modifyMp(int mod);
+	void modifyMp(double mod);
 	
 	/**
 	 * @return the current mp of this world character which can range from 0 to<br>
 	 *         max mp.
 	 */
-	int getMp();
+	double getMp();
 	
 	/**
 	 * @return the max mp of this world character
 	 */
-	int getMaxMp();
+	double getMaxMp();
 	
 	/**
 	 * @return the ai of this world character

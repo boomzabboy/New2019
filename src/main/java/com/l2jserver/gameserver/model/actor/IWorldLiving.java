@@ -31,20 +31,20 @@ public interface IWorldLiving extends IWorldObject
 	 * @param damage the damage
 	 * @param skill the skill used to incflict the damage
 	 */
-	void inflictDamage(IWorldCharacter inflictor, int damage, Skill skill);
+	void inflictDamage(IWorldCharacter inflictor, double damage, Skill skill);
 	
 	/**
 	 * Consume hp of this world living.
 	 * @param amount the amount to consume
 	 * @return true when hp is enough, false otherwise
 	 */
-	boolean consumeHp(int amount);
+	boolean consumeHp(double amount);
 	
 	/**
 	 * Modify the hp of this world living.
 	 * @param mod the modificator
 	 */
-	void modifyHp(int mod);
+	void modifyHp(double mod);
 	
 	/**
 	 * @return whatever this world living is dead
@@ -55,10 +55,10 @@ public interface IWorldLiving extends IWorldObject
 	 * @return the current hp of this world living which can range from 0 to<br>
 	 *         max hp.
 	 */
-	int getHp();
+	double getHp();
 	
 	/**
 	 * @return the max hp of this world living
 	 */
-	int getMaxHp();
+	double getMaxHp();
 }
