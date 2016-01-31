@@ -19,6 +19,7 @@
 package com.l2jserver.gameserver.network.clientpackets;
 
 import com.l2jserver.Config;
+import com.l2jserver.gameserver.GeoData;
 import com.l2jserver.gameserver.model.L2World;
 import com.l2jserver.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jserver.gameserver.model.zone.ZoneId;
@@ -108,6 +109,12 @@ public class ValidatePosition extends L2GameClientPacket
 			// sendPacket(new GetOnVehicle(activeChar.getObjectId(), _data, activeChar.getInBoatPosition()));
 			// }
 			// }
+			return;
+		}
+		
+		if (GeoData.getInstance().hasGeo(realX, realY) && (_z < realZ) && (Math.abs(realZ - _z) > 100))
+		{
+			activeChar.sendPacket(new ValidateLocation(activeChar));
 			return;
 		}
 		
