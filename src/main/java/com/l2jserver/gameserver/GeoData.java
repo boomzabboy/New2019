@@ -406,25 +406,25 @@ public class GeoData
 					{
 						int northGeoZ = getLosGeoZ(prevX, prevY, prevGeoZ, prevX, prevY - 1, Cell.NSWE_EAST);
 						int eastGeoZ = getLosGeoZ(prevX, prevY, prevGeoZ, prevX + 1, prevY, Cell.NSWE_NORTH);
-						canSeeThrough = (northGeoZ <= maxHeight) && (eastGeoZ <= maxHeight) && (northGeoZ <= getNearestZ(prevX, prevY - 1, curBeeZ)) && (eastGeoZ <= getNearestZ(prevX + 1, prevY, curBeeZ));
+						canSeeThrough = (northGeoZ <= maxHeight) && (eastGeoZ <= maxHeight);
 					}
 					else if ((nswe & Cell.NSWE_NORTH_WEST) == Cell.NSWE_NORTH_WEST)
 					{
 						int northGeoZ = getLosGeoZ(prevX, prevY, prevGeoZ, prevX, prevY - 1, Cell.NSWE_WEST);
 						int westGeoZ = getLosGeoZ(prevX, prevY, prevGeoZ, prevX - 1, prevY, Cell.NSWE_NORTH);
-						canSeeThrough = (northGeoZ <= maxHeight) && (westGeoZ <= maxHeight) && (northGeoZ <= getNearestZ(prevX, prevY - 1, curBeeZ)) && (westGeoZ <= getNearestZ(prevX - 1, prevY, curBeeZ));
+						canSeeThrough = (northGeoZ <= maxHeight) && (westGeoZ <= maxHeight);
 					}
 					else if ((nswe & Cell.NSWE_SOUTH_EAST) == Cell.NSWE_SOUTH_EAST)
 					{
 						int southGeoZ = getLosGeoZ(prevX, prevY, prevGeoZ, prevX, prevY + 1, Cell.NSWE_EAST);
 						int eastGeoZ = getLosGeoZ(prevX, prevY, prevGeoZ, prevX + 1, prevY, Cell.NSWE_SOUTH);
-						canSeeThrough = (southGeoZ <= maxHeight) && (eastGeoZ <= maxHeight) && (southGeoZ <= getNearestZ(prevX, prevY + 1, curBeeZ)) && (eastGeoZ <= getNearestZ(prevX + 1, prevY, curBeeZ));
+						canSeeThrough = (southGeoZ <= maxHeight) && (eastGeoZ <= maxHeight);
 					}
 					else if ((nswe & Cell.NSWE_SOUTH_WEST) == Cell.NSWE_SOUTH_WEST)
 					{
 						int southGeoZ = getLosGeoZ(prevX, prevY, prevGeoZ, prevX, prevY + 1, Cell.NSWE_WEST);
 						int westGeoZ = getLosGeoZ(prevX, prevY, prevGeoZ, prevX - 1, prevY, Cell.NSWE_SOUTH);
-						canSeeThrough = (southGeoZ <= maxHeight) && (westGeoZ <= maxHeight) && (southGeoZ <= getNearestZ(prevX, prevY + 1, curBeeZ)) && (westGeoZ <= getNearestZ(prevX - 1, prevY, curBeeZ));
+						canSeeThrough = (southGeoZ <= maxHeight) && (westGeoZ <= maxHeight);
 					}
 					else
 					{
