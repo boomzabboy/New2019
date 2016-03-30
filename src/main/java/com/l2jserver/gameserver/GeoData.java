@@ -409,7 +409,7 @@ public class GeoData
 				boolean canSeeThrough = false;
 				if (curGeoZ <= maxHeight)
 				{
-					if ((nswe & Cell.NSWE_NORTH_EAST) == Cell.NSWE_NORTH_EAST)
+/*@formatter:off					if ((nswe & Cell.NSWE_NORTH_EAST) == Cell.NSWE_NORTH_EAST)
 					{
 						int northGeoZ = getLosGeoZ(prevX, prevY, prevGeoZ, prevX, prevY - 1, Cell.NSWE_EAST);
 						int eastGeoZ = getLosGeoZ(prevX, prevY, prevGeoZ, prevX + 1, prevY, Cell.NSWE_NORTH);
@@ -434,9 +434,9 @@ public class GeoData
 						canSeeThrough = (southGeoZ <= maxHeight) && (westGeoZ <= maxHeight);
 					}
 					else
-					{
+					{*/
 						canSeeThrough = true;
-					}
+//					} @formatter:on
 				}
 				
 				if (!canSeeThrough)
