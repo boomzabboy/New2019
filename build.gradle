@@ -7,11 +7,11 @@ defaultTasks('clean', 'build')
 sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 configurations.all {
-    transitive = false
+	transitive = false
 }
 
 dependencies {
@@ -66,24 +66,24 @@ task loginJar(type: Jar, dependsOn: classes) {
 
 task configuratorJar(type: Jar, dependsOn: classes) {
 	from(sourceSets.main.output)
+
 	archiveName = 'L2J_Configurator.jar'
-	include('**/configurator/**')
-	include('**/i18n/**')
-	include('**/images/**')
-	exclude('**/accountmanager/**')
-	exclude('**/dbinstaller/**')
-	exclude('**/gameserver/**')
-	exclude('**/gsregistering/**')
-	exclude('**/log/**')
-	exclude('**/loginserver/**')
-	exclude('**/status/**')
-	exclude('**/util/**')
-	exclude('**/Config/**')
-	exclude('**/ConnectionFactory/**')
-	exclude('**/Server/**')
+
+	//include('/com/l2jserver/*.*')
+	//include('/com/l2jserver/util/**')
+	include('/com/l2jserver/tools/*.*')
+	include('/com/l2jserver/tools/util/**')
+	include('/com/l2jserver/tools/configurator/**')
+
+	include('/resources/*.*')
+	include('/resources/util/**')
+	include('/resources/tools/*.*')
+	include('/resources/tools/util/**')
+	include('/resources/tools/configurator/**')
+
 	manifest {
 		from(generalManifest)
-		attributes('Main-Class': 'com.l2jserver.tools.configurator.ConfigUserInterface')
+		attributes('Main-Class': 'com.l2jserver.tools.configurator.Configurator')
 	}
 }
 

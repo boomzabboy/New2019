@@ -42,7 +42,7 @@ public class BackgroundTaskRunner<T> implements Runnable, ComponentListener
 		Objects.requireNonNull(task);
 		_dialog = dialog;
 		_task = task;
-		_thread = new Thread(this, "L2J-TOOLS-BackgroundTaskRunner");
+		_thread = new Thread(this, "L2J-TOOLS-SWING-BackgroundTaskRunner");
 		
 		_dialog.setModalityType(ModalityType.APPLICATION_MODAL);
 		_dialog.addComponentListener(this);

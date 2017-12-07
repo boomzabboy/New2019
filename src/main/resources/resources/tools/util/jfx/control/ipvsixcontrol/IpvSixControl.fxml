@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+
+<fx:root maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" spacing="3.0" type="HBox" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <TextField fx:id="_ipvSixAddressFirst" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" promptText="0 - FFFF" HBox.hgrow="ALWAYS" />
+      <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="-Infinity" text=":" textAlignment="CENTER" HBox.hgrow="NEVER" />
+      <TextField fx:id="_ipvSixAddressSecond" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" promptText="0 - FFFF" HBox.hgrow="ALWAYS" />
+      <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="-Infinity" text=":" HBox.hgrow="NEVER" />
+      <TextField fx:id="_ipvSixAddressThird" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" promptText="0 - FFFF" HBox.hgrow="ALWAYS" />
+      <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="-Infinity" text=":" HBox.hgrow="NEVER" />
+      <TextField fx:id="_ipvSixAddressFourth" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" promptText="0 - FFFF" HBox.hgrow="ALWAYS" />
+      <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="-Infinity" text=":" HBox.hgrow="NEVER" />
+      <TextField fx:id="_ipvSixAddressFifth" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" promptText="0 - FFFF" HBox.hgrow="ALWAYS" />
+      <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="-Infinity" text=":" HBox.hgrow="NEVER" />
+      <TextField fx:id="_ipvSixAddressSixth" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" promptText="0 - FFFF" HBox.hgrow="ALWAYS" />
+      <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="-Infinity" text=":" HBox.hgrow="NEVER" />
+      <TextField fx:id="_ipvSixAddressSeventh" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" promptText="0 - FFFF" HBox.hgrow="ALWAYS" />
+      <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="-Infinity" text=":" HBox.hgrow="NEVER" />
+      <TextField fx:id="_ipvSixAddressEigth" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" promptText="0 - FFFF" HBox.hgrow="ALWAYS" />
+      <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="-Infinity" text="\%" HBox.hgrow="NEVER" />
+      <TextField fx:id="_ipvSixAddressZone" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" promptText="%Zone" HBox.hgrow="ALWAYS" />
+   </children>
+</fx:root>

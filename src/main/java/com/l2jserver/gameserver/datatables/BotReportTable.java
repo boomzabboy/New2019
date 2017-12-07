@@ -19,7 +19,6 @@
 package com.l2jserver.gameserver.datatables;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,12 +27,12 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -54,7 +53,7 @@ import com.l2jserver.gameserver.network.serverpackets.SystemMessage;
 public final class BotReportTable
 {
 	// Zoey76: TODO: Split XML parsing from SQL operations, use IXmlReader instead of SAXParser.
-	private static final Logger LOGGER = Logger.getLogger(BotReportTable.class.getName());
+	private static final Logger LOGGER = LoggerFactory.getLogger(BotReportTable.class.getName());
 	
 	private static final int COLUMN_BOT_ID = 1;
 	private static final int COLUMN_REPORTER_ID = 2;
@@ -86,18 +85,16 @@ public final class BotReportTable
 			
 			try
 			{
-				File punishments = new File("./config/botreport_punishments.xml");
-				if (!punishments.exists())
+				File punishments = Config.getFileOfConfigFile(Config.BOTREPORT_PUNISHMENTS_FILE, "Using empty list of botreport punishments.");
+				if (punishments != null)
 				{
-					throw new FileNotFoundException(punishments.getName());
+					SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
+					parser.parse(punishments, new PunishmentsLoader());
 				}
-				
-				SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
-				parser.parse(punishments, new PunishmentsLoader());
 			}
 			catch (Exception e)
 			{
-				LOGGER.log(Level.WARNING, "BotReportTable: Could not load punishments from /config/botreport_punishments.xml", e);
+				LOGGER.warn("BotReportTable: Could not load punishments from {}", Config.BOTREPORT_PUNISHMENTS_FILE, e);
 			}
 			
 			loadReportedCharData();
@@ -167,11 +164,11 @@ public final class BotReportTable
 				}
 			}
 			
-			LOGGER.info("BotReportTable: Loaded " + _reports.size() + " bot reports");
+			LOGGER.info("BotReportTable: Loaded {} bot reports", _reports.size());
 		}
 		catch (Exception e)
 		{
-			LOGGER.log(Level.WARNING, "BotReportTable: Could not load reported char data!", e);
+			LOGGER.warn("BotReportTable: Could not load reported char data!", e);
 		}
 	}
 	
@@ -201,7 +198,7 @@ public final class BotReportTable
 		}
 		catch (Exception e)
 		{
-			LOGGER.log(Level.SEVERE, "BotReportTable: Could not update reported char data in database!", e);
+			LOGGER.error("BotReportTable: Could not update reported char data in database!", e);
 		}
 	}
 	
@@ -380,8 +377,8 @@ public final class BotReportTable
 	/**
 	 * Adds a debuff punishment into the punishments record. If skill does not exist, will log it and return
 	 * @param neededReports (report count to trigger this debuff)
-	 * @param skillId
-	 * @param skillLevel
+	 * @param skillId skill effects to apply
+	 * @param skillLevel the level of the skill to apply effects from
 	 * @param sysMsg (id of a system message to send when applying the punish)
 	 */
 	void addPunishment(int neededReports, int skillId, int skillLevel, int sysMsg)
@@ -393,7 +390,7 @@ public final class BotReportTable
 		}
 		else
 		{
-			LOGGER.warning("BotReportTable: Could not add punishment for " + neededReports + " report(s): Skill " + skillId + "-" + skillLevel + " does not exist!");
+			LOGGER.warn("BotReportTable: Could not add punishment for {} report(s): Skill {}-{} does not exist!", neededReports, skillId, skillLevel);
 		}
 	}
 	
@@ -429,7 +426,7 @@ public final class BotReportTable
 		catch (Exception e)
 		{
 			ThreadPoolManager.getInstance().scheduleGeneral(new ResetPointTask(), 24 * 3600 * 1000);
-			LOGGER.log(Level.WARNING, "BotReportTable: Could not properly schedule bot report points reset task. Scheduled in 24 hours.", e);
+			LOGGER.warn("BotReportTable: Could not properly schedule bot report points reset task. Scheduled in 24 hours.", e);
 		}
 	}
 	
@@ -554,7 +551,7 @@ public final class BotReportTable
 	}
 	
 	/**
-	 * SAX loader to parse /config/botreport_punishments.xml file
+	 * SAX loader to parse botreport_punishments.xml file
 	 */
 	private final class PunishmentsLoader extends DefaultHandler
 	{

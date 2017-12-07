@@ -73,7 +73,7 @@ public final class SiegeManager
 	
 	/**
 	 * @param clan The L2Clan of the player
-	 * @param castleid
+	 * @param castleid the castle id
 	 * @return true if the clan is registered or owner of a castle
 	 */
 	public final boolean checkIsRegistered(L2Clan clan, int castleid)

@@ -169,7 +169,7 @@ public final class TerritoryWarManager implements Siegable
 	}
 	
 	/**
-	 * @param castleId
+	 * @param castleId the castle id
 	 * @param clan The L2Clan of the player
 	 * @return true if the clan is registered
 	 */
@@ -200,8 +200,8 @@ public final class TerritoryWarManager implements Siegable
 	}
 	
 	/**
-	 * @param castleId
-	 * @param objId
+	 * @param castleId the castle id
+	 * @param objId player object id
 	 * @return true if the player is registered
 	 */
 	public final boolean checkIsRegistered(int castleId, int objId)
