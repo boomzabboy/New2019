@@ -1,4 +1,4 @@
-image: openjdk:8u151
+image: coeps/8-jdk-jfx
 
 pipelines:
   default:
