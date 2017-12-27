@@ -25,9 +25,14 @@ public enum MsgBoxResult
 {
 	/**
 	 * Action event buttons:<br>
-	 * {@link MsgBoxButton#OK}, {@link MsgBoxButton#YES}, {@link MsgBoxButton#SAVE}
+	 * {@link MsgBoxButton#OK}
 	 */
 	OK,
+	/**
+	 * Action event buttons:<br>
+	 * {@link MsgBoxButton#YES}, {@link MsgBoxButton#SAVE}
+	 */
+	YES,
 	/**
 	 * Action event buttons:<br>
 	 * {@link MsgBoxButton#RETRY}, {@link MsgBoxButton#TRY_AGAIN}
@@ -43,7 +48,12 @@ public enum MsgBoxResult
 	 * closed without one of it's buttons, this will be the result.<br>
 	 * <br>
 	 * Action event buttons:<br>
-	 * {@link MsgBoxButton#CANCEL}, {@link MsgBoxButton#NO}, {@link MsgBoxButton#ABORT}, {@link MsgBoxButton#DO_NOT_SAVE}<br>
+	 * {@link MsgBoxButton#CANCEL}, {@link MsgBoxButton#ABORT}<br>
 	 */
-	CANCEL
+	CANCEL,
+	/**
+	 * Action event buttons:<br>
+	 * {@link MsgBoxButton#NO}, {@link MsgBoxButton#DO_NOT_SAVE}
+	 */
+	NO
 }

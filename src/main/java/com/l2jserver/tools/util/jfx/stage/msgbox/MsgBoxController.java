@@ -46,10 +46,7 @@ public final class MsgBoxController
 		ivIcon.setFitWidth(Region.USE_COMPUTED_SIZE);
 		ivIcon.setFitHeight(Region.USE_COMPUTED_SIZE);
 		updateDetailBox();
-		taDetails.textProperty().addListener((o) ->
-		{
-			updateDetailBox();
-		});
+		taDetails.textProperty().addListener((o) -> updateDetailBox());
 	}
 	
 	private final Map<MsgBoxButton, EventHandler<ActionEvent>> _buttonHandlers = new HashMap<>();
@@ -100,6 +97,7 @@ public final class MsgBoxController
 				}
 				finally
 				{
+					_button = mbButton;
 					_result = mbButton.getResult();
 					stage.close();
 				}

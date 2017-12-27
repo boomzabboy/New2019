@@ -26,8 +26,9 @@ import java.util.ResourceBundle;
 public enum MsgBoxButton
 {
 	OK(MsgBoxResult.OK),
-	YES(MsgBoxResult.OK),
-	SAVE(MsgBoxResult.OK),
+	
+	YES(MsgBoxResult.YES),
+	SAVE(MsgBoxResult.YES),
 	
 	RETRY(MsgBoxResult.RETRY),
 	TRY_AGAIN(MsgBoxResult.RETRY),
@@ -36,9 +37,10 @@ public enum MsgBoxButton
 	IGNORE(MsgBoxResult.CONTINUE),
 	
 	CANCEL(MsgBoxResult.CANCEL),
-	NO(MsgBoxResult.CANCEL),
 	ABORT(MsgBoxResult.CANCEL),
-	DO_NOT_SAVE(MsgBoxResult.CANCEL);
+	
+	NO(MsgBoxResult.NO),
+	DO_NOT_SAVE(MsgBoxResult.NO);
 	
 	private final String _localizationKey = "BUTTON_" + toString();
 	private final MsgBoxResult _result;
