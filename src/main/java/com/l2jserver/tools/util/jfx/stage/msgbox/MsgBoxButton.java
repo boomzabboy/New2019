@@ -25,29 +25,33 @@ import java.util.ResourceBundle;
  */
 public enum MsgBoxButton
 {
-	/** Result: {@link MsgBoxResult#OK} */
-	OK,
-	/** Result: {@link MsgBoxResult#OK} */
-	YES,
+	OK(MsgBoxResult.OK),
+	YES(MsgBoxResult.OK),
+	SAVE(MsgBoxResult.OK),
 	
-	/** Result: {@link MsgBoxResult#RETRY} */
-	RETRY,
-	/** Result: {@link MsgBoxResult#RETRY} */
-	TRY_AGAIN,
+	RETRY(MsgBoxResult.RETRY),
+	TRY_AGAIN(MsgBoxResult.RETRY),
 	
-	/** Result: {@link MsgBoxResult#CONTINUE} */
-	CONTINUE,
-	/** Result: {@link MsgBoxResult#CONTINUE} */
-	IGNORE,
+	CONTINUE(MsgBoxResult.CONTINUE),
+	IGNORE(MsgBoxResult.CONTINUE),
 	
-	/** Result: {@link MsgBoxResult#CANCEL} */
-	CANCEL,
-	/** Result: {@link MsgBoxResult#CANCEL} */
-	NO,
-	/** Result: {@link MsgBoxResult#CANCEL} */
-	ABORT;
+	CANCEL(MsgBoxResult.CANCEL),
+	NO(MsgBoxResult.CANCEL),
+	ABORT(MsgBoxResult.CANCEL),
+	DO_NOT_SAVE(MsgBoxResult.CANCEL);
 	
 	private final String _localizationKey = "BUTTON_" + toString();
+	private final MsgBoxResult _result;
+	
+	private MsgBoxButton(MsgBoxResult result)
+	{
+		_result = result;
+	}
+	
+	public MsgBoxResult getResult()
+	{
+		return _result;
+	}
 	
 	public String getButtonText(ResourceBundle resources)
 	{

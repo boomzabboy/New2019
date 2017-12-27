@@ -20,10 +20,10 @@ package com.l2jserver.tools.configurator.frontend.jfx.control.configdirectivetab
 
 import java.net.InetAddress;
 
-import com.l2jserver.tools.configurator.frontend.jfx.control.configdirectivetable.cells.valuecellsupport.BooleanCellSupport;
-import com.l2jserver.tools.configurator.frontend.jfx.control.configdirectivetable.cells.valuecellsupport.IValueCellSupport;
-import com.l2jserver.tools.configurator.frontend.jfx.control.configdirectivetable.cells.valuecellsupport.InetAddressCellSupport;
-import com.l2jserver.tools.configurator.frontend.jfx.control.configdirectivetable.cells.valuecellsupport.StringCellSupport;
+import com.l2jserver.tools.configurator.frontend.jfx.control.configdirectivetable.cells.valuecellsupport.BooleanValueCellSupport;
+import com.l2jserver.tools.configurator.frontend.jfx.control.configdirectivetable.cells.valuecellsupport.ValueCellSupport;
+import com.l2jserver.tools.configurator.frontend.jfx.control.configdirectivetable.cells.valuecellsupport.InetAddressValueCellSupport;
+import com.l2jserver.tools.configurator.frontend.jfx.control.configdirectivetable.cells.valuecellsupport.StringValueCellSupport;
 import com.l2jserver.tools.configurator.model.ConfigDirective;
 
 import javafx.geometry.Pos;
@@ -34,7 +34,7 @@ import javafx.scene.control.TableCell;
  */
 public final class ValueCell extends TableCell<ConfigDirective, ConfigDirective>
 {
-	private IValueCellSupport _support;
+	private ValueCellSupport _support;
 	
 	public ValueCell(boolean isDefaultDisplay)
 	{
@@ -64,15 +64,15 @@ public final class ValueCell extends TableCell<ConfigDirective, ConfigDirective>
 			Class<?> type = item.getType();
 			if (type == Boolean.class)
 			{
-				_support = new BooleanCellSupport();
+				_support = new BooleanValueCellSupport();
 			}
 			else if (type == InetAddress.class)
 			{
-				_support = new InetAddressCellSupport();
+				_support = new InetAddressValueCellSupport();
 			}
 			else
 			{
-				_support = new StringCellSupport();
+				_support = new StringValueCellSupport();
 			}
 			
 			_support.updateItem(this, oldItem, item, empty);

@@ -32,7 +32,7 @@ import javafx.scene.control.TableCell;
 /**
  * @author HorridoJoho
  */
-public final class BooleanCellSupport implements IValueCellSupport
+public final class BooleanValueCellSupport implements ValueCellSupport
 {
 	private static final Queue<CheckBox> _boxQueue = new LinkedList<>();
 	

@@ -16,21 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.l2jserver.tools.configurator.frontend.jfx.control.configdirectivetable.cells.valuecellsupport;
+package com.l2jserver.tools.configurator.frontend;
 
-import com.l2jserver.tools.configurator.model.ConfigDirective;
-
-import javafx.scene.Node;
-import javafx.scene.control.TableCell;
+import com.l2jserver.tools.util.app.ApplicationFrontend;
 
 /**
  * @author HorridoJoho
  */
-public interface IValueCellSupport
+public interface ConfiguratorFrontend extends ApplicationFrontend
 {
-	void clear(TableCell<?, ?> cell, ConfigDirective oldItem, ConfigDirective newItem, boolean empty);
-	
-	void updateItem(TableCell<?, ?> cell, ConfigDirective oldItem, ConfigDirective newItem, boolean empty);
-	
-	Node getValueControl();
 }

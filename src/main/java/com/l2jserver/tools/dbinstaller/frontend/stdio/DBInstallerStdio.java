@@ -27,13 +27,13 @@ import java.util.prefs.Preferences;
 
 import com.l2jserver.tools.dbinstaller.RunTasks;
 import com.l2jserver.tools.util.SQLUtil;
-import com.l2jserver.tools.util.app.IApplicationFrontend;
+import com.l2jserver.tools.util.app.ApplicationFrontend;
 import com.l2jserver.tools.util.io.CloseShieldedInputStream;
 
 /**
  * @author mrTJO, HorridoJoho
  */
-public class DBInstallerStdio implements IApplicationFrontend
+public class DBInstallerStdio implements ApplicationFrontend
 {
 	Connection _con;
 	

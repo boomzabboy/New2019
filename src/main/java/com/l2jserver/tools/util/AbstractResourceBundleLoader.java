@@ -19,6 +19,7 @@
 package com.l2jserver.tools.util;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ResourceBundle;
 
 import javax.annotation.Resource;
@@ -33,18 +34,6 @@ public abstract class AbstractResourceBundleLoader
 	protected AbstractResourceBundleLoader(String bundleName)
 	{
 		_bundle = ResourceBundle.getBundle(bundleName);
-	}
-	
-	private boolean checkModifiers(Field f, int... modifiers)
-	{
-		for (int m : modifiers)
-		{
-			if ((f.getModifiers() & m) == 0)
-			{
-				return false;
-			}
-		}
-		return true;
 	}
 	
 	protected void load()
@@ -64,7 +53,15 @@ public abstract class AbstractResourceBundleLoader
 				{
 					f.setAccessible(true);
 				}
-				f.set(this, _bundle.getString(f.getName()));
+				
+				if (ReflectUtil.checkModifiers(f, Modifier.STATIC))
+				{
+					f.set(null, _bundle.getString(f.getName()));
+				}
+				else
+				{
+					f.set(this, _bundle.getString(f.getName()));
+				}
 			}
 			catch (IllegalArgumentException | IllegalAccessException e)
 			{

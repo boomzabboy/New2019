@@ -16,34 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.l2jserver.tools.util.jfx.stage.msgbox;
+package com.l2jserver.tools.util;
+
+import java.lang.reflect.Field;
 
 /**
  * @author HorridoJoho
  */
-public enum MsgBoxResult
+public final class ReflectUtil
 {
-	/**
-	 * Action event buttons:<br>
-	 * {@link MsgBoxButton#OK}, {@link MsgBoxButton#YES}, {@link MsgBoxButton#SAVE}
-	 */
-	OK,
-	/**
-	 * Action event buttons:<br>
-	 * {@link MsgBoxButton#RETRY}, {@link MsgBoxButton#TRY_AGAIN}
-	 */
-	RETRY,
-	/**
-	 * Action event buttons:<br>
-	 * {@link MsgBoxButton#CONTINUE}, {@link MsgBoxButton#IGNORE}
-	 */
-	CONTINUE,
-	/**
-	 * This is the default message box result. When a message box is<br>
-	 * closed without one of it's buttons, this will be the result.<br>
-	 * <br>
-	 * Action event buttons:<br>
-	 * {@link MsgBoxButton#CANCEL}, {@link MsgBoxButton#NO}, {@link MsgBoxButton#ABORT}, {@link MsgBoxButton#DO_NOT_SAVE}<br>
-	 */
-	CANCEL
+	public static boolean checkModifiers(Field f, int... modifiers)
+	{
+		for (int m : modifiers)
+		{
+			if ((f.getModifiers() & m) == 0)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
 }

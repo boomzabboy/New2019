@@ -47,8 +47,8 @@ public class IPv4Filter implements IAcceptFilter, Runnable
 	}
 	
 	/**
-	 * @param ip
-	 * @return
+	 * @param ip the bytes of the ip address to hash
+	 * @return the hash of the ip address
 	 */
 	private static final int hash(byte[] ip)
 	{

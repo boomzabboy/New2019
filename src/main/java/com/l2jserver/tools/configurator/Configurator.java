@@ -18,7 +18,7 @@
  */
 package com.l2jserver.tools.configurator;
 
-import com.l2jserver.tools.configurator.frontend.IConfiguratorFrontend;
+import com.l2jserver.tools.configurator.frontend.ConfiguratorFrontend;
 import com.l2jserver.tools.configurator.frontend.jfx.JfxApplication;
 
 import javafx.application.Application;
@@ -33,10 +33,11 @@ public final class Configurator
 	
 	public static void main(String[] args)
 	{
+		// when another ui is implemented, decide here which to use and launch it
 		Application.launch(JfxApplication.class, args);
 	}
 	
-	public static final Boolean quit(IConfiguratorFrontend frontend)
+	public static final Boolean quit(ConfiguratorFrontend frontend)
 	{
 		return true;
 	}

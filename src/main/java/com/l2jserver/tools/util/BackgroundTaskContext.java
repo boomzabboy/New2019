@@ -16,13 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.l2jserver.tools.configurator.frontend;
-
-import com.l2jserver.tools.util.app.IApplicationFrontend;
+package com.l2jserver.tools.util;
 
 /**
  * @author HorridoJoho
  */
-public interface IConfiguratorFrontend extends IApplicationFrontend
+public interface BackgroundTaskContext<T>
 {
+	void requestCancelation();
+	
+	boolean isCancelationRequested();
+	
+	Throwable getThrown();
+	
+	T getResult();
 }

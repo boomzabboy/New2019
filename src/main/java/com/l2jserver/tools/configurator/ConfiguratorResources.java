@@ -32,6 +32,8 @@ public final class ConfiguratorResources extends AbstractResourceBundleLoader
 	@Resource
 	public final String AppAbout = null;
 	@Resource
+	public final String AppAboutHeadline = null;
+	@Resource
 	public final String AppName = null;
 	@Resource
 	public final String AppCloseDirtyMessage = null;

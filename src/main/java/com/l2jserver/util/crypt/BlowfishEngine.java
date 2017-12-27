@@ -1123,9 +1123,9 @@ public final class BlowfishEngine
 	
 	/**
 	 * apply the encryption cycle to each value pair in the table.
-	 * @param xl
-	 * @param xr
-	 * @param table
+	 * @param xl left part of the block
+	 * @param xr right part of the block
+	 * @param table the table
 	 */
 	private void processTable(int xl, int xr, int[] table)
 	{

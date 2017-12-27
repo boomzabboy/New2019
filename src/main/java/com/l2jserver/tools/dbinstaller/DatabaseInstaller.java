@@ -24,7 +24,7 @@ import javax.swing.UIManager;
 
 import com.l2jserver.tools.dbinstaller.frontend.stdio.DBInstallerStdio;
 import com.l2jserver.tools.dbinstaller.frontend.swing.DBConfigGUI;
-import com.l2jserver.tools.util.app.IApplicationFrontend;
+import com.l2jserver.tools.util.app.ApplicationFrontend;
 
 /**
  * Code basically merged from LauncherLS/GS to remove the code duplication.
@@ -32,7 +32,7 @@ import com.l2jserver.tools.util.app.IApplicationFrontend;
  */
 public final class DatabaseInstaller
 {
-	private static IApplicationFrontend _frontend;
+	private static ApplicationFrontend _frontend;
 	
 	private final String _installScriptsPath;
 	private final String _cleanScript;
@@ -83,7 +83,7 @@ public final class DatabaseInstaller
 		return _defaultDatabase;
 	}
 	
-	public static IApplicationFrontend getFrontend()
+	public static ApplicationFrontend getFrontend()
 	{
 		return _frontend;
 	}

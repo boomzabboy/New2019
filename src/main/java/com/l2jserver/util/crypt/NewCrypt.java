@@ -31,7 +31,7 @@ public final class NewCrypt
 	private final BlowfishEngine _cipher;
 	
 	/**
-	 * @param blowfishKey
+	 * @param blowfishKey the blowfish key to use
 	 */
 	public NewCrypt(byte[] blowfishKey)
 	{

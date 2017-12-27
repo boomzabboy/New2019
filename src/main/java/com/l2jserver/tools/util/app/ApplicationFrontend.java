@@ -16,34 +16,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.l2jserver.tools.util.jfx.stage.msgbox;
+package com.l2jserver.tools.util.app;
 
 /**
  * @author HorridoJoho
  */
-public enum MsgBoxResult
+public interface ApplicationFrontend
 {
-	/**
-	 * Action event buttons:<br>
-	 * {@link MsgBoxButton#OK}, {@link MsgBoxButton#YES}, {@link MsgBoxButton#SAVE}
-	 */
-	OK,
-	/**
-	 * Action event buttons:<br>
-	 * {@link MsgBoxButton#RETRY}, {@link MsgBoxButton#TRY_AGAIN}
-	 */
-	RETRY,
-	/**
-	 * Action event buttons:<br>
-	 * {@link MsgBoxButton#CONTINUE}, {@link MsgBoxButton#IGNORE}
-	 */
-	CONTINUE,
-	/**
-	 * This is the default message box result. When a message box is<br>
-	 * closed without one of it's buttons, this will be the result.<br>
-	 * <br>
-	 * Action event buttons:<br>
-	 * {@link MsgBoxButton#CANCEL}, {@link MsgBoxButton#NO}, {@link MsgBoxButton#ABORT}, {@link MsgBoxButton#DO_NOT_SAVE}<br>
-	 */
-	CANCEL
+	void reportInfo(boolean drawAttention, String message);
+	
+	void reportInfo(boolean drawAttention, String message, Object... args);
+	
+	void reportWarn(boolean drawAttention, String message);
+	
+	void reportWarn(boolean drawAttention, String message, Object... args);
+	
+	void reportError(boolean drawAttention, String message);
+	
+	void reportError(boolean drawAttention, Throwable t, String message);
+	
+	void reportError(boolean drawAttention, Throwable t, String message, Object... args);
+	
+	String requestUserInput(String message, Object... args);
+	
+	boolean requestUserConfirm(String message, Object... args);
+	
+	void close();
 }

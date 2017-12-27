@@ -23,12 +23,12 @@ import java.text.MessageFormat;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-import com.l2jserver.tools.util.app.IApplicationFrontend;
+import com.l2jserver.tools.util.app.ApplicationFrontend;
 
 /**
  * @author HorridoJoho
  */
-public abstract class AbstractGUI extends JFrame implements IApplicationFrontend
+public abstract class AbstractGUI extends JFrame implements ApplicationFrontend
 {
 	private static final long serialVersionUID = 1L;
 	

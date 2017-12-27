@@ -18,25 +18,25 @@
  */
 package com.l2jserver.tools.configurator.frontend.jfx.control.configdirectivetable.cells.valuecellsupport;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 
 import com.l2jserver.tools.configurator.model.ConfigDirective;
-import com.l2jserver.tools.util.jfx.control.inetaddresscontrol.InetAddressControl;
 
 import javafx.beans.binding.Bindings;
-import javafx.scene.Node;
+import javafx.geometry.Pos;
+import javafx.scene.control.Control;
 import javafx.scene.control.TableCell;
+import javafx.scene.control.TextField;
 
 /**
  * @author HorridoJoho
  */
-public final class InetAddressCellSupport implements IValueCellSupport
+public final class StringValueCellSupport implements ValueCellSupport
 {
-	private static final Queue<InetAddressControl> _boxQueue = new LinkedList<>();
+	private static final Queue<TextField> _fieldQueue = new LinkedList<>();
 	
-	private InetAddressControl _box = null;
+	private TextField _field = null;
 	
 	@Override
 	public void clear(TableCell<?, ?> cell, ConfigDirective oldItem, ConfigDirective newItem, boolean empty)
@@ -45,11 +45,10 @@ public final class InetAddressCellSupport implements IValueCellSupport
 		{
 			if (!cell.isDisable())
 			{
-				Bindings.unbindBidirectional(oldItem.valueProperty(), _box.stringValueProperty());
+				Bindings.unbindBidirectional(oldItem.valueProperty(), _field.textProperty());
 			}
-			
-			_boxQueue.offer(_box);
-			_box = null;
+			_fieldQueue.offer(_field);
+			_field = null;
 		}
 	}
 	
@@ -58,29 +57,23 @@ public final class InetAddressCellSupport implements IValueCellSupport
 	{
 		if (!empty && (newItem != null))
 		{
-			_box = _boxQueue.poll();
-			if (_box == null)
+			_field = _fieldQueue.poll();
+			if (_field == null)
 			{
-				try
-				{
-					_box = new InetAddressControl(true, false, true);
-				}
-				catch (IOException e)
-				{
-					e.printStackTrace();
-				}
+				_field = new TextField();
+				_field.setAlignment(Pos.CENTER);
 			}
-			_box.setStringValue(newItem.getValue());
+			_field.setText(newItem.getDefaultValue());
 			if (!cell.isDisable())
 			{
-				Bindings.bindBidirectional(newItem.valueProperty(), _box.stringValueProperty());
+				Bindings.bindBidirectional(newItem.valueProperty(), _field.textProperty());
 			}
 		}
 	}
 	
 	@Override
-	public Node getValueControl()
+	public Control getValueControl()
 	{
-		return _box;
+		return _field;
 	}
 }

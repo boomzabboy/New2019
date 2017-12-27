@@ -1,105 +1,128 @@
 package com.l2jserver.tools.util.jfx.stage.msgbox;
 
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
-import com.l2jserver.tools.util.jfx.StageController;
-
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public final class MsgBoxController implements StageController
+public final class MsgBoxController
 {
 	@FXML
 	private ResourceBundle resources;
+	@FXML
+	private URL location;
 	
 	@FXML
-	private HBox hboxButtons;
+	private ImageView ivIcon;
 	@FXML
-	private ImageView ivImage;
+	private VBox vbContentArea;
 	@FXML
-	private Label lblText;
-	
-	private MsgBoxResult _result;
+	private Label lbHeadline;
+	@FXML
+	private Label lbDescription;
+	@FXML
+	private HBox hbButtons;
+	@FXML
+	private TextArea taDetails;
 	
 	@FXML
 	void initialize()
 	{
 		_result = MsgBoxResult.CANCEL;
-		ivImage.setFitWidth(Region.USE_COMPUTED_SIZE);
-		ivImage.setFitHeight(Region.USE_COMPUTED_SIZE);
-	}
-	
-	public void setImage(Image image)
-	{
-		ivImage.setImage(image);
-	}
-	
-	public void setMessage(String message)
-	{
-		lblText.setText(message);
-	}
-	
-	public void setButtons(Stage stage, MsgBoxButton... buttons)
-	{
-		for (MsgBoxButton button : buttons)
+		ivIcon.setFitWidth(Region.USE_COMPUTED_SIZE);
+		ivIcon.setFitHeight(Region.USE_COMPUTED_SIZE);
+		updateDetailBox();
+		taDetails.textProperty().addListener((o) ->
 		{
-			Button btn = new Button(button.getButtonText(resources));
-			
-			switch (button)
-			{
-				case OK:
-				case YES:
-					btn.addEventHandler(ActionEvent.ACTION, e ->
-					{
-						_result = MsgBoxResult.OK;
-						stage.close();
-					});
-					break;
-				case RETRY:
-				case TRY_AGAIN:
-					btn.addEventHandler(ActionEvent.ACTION, e ->
-					{
-						_result = MsgBoxResult.RETRY;
-						stage.close();
-					});
-					break;
-				case CONTINUE:
-				case IGNORE:
-					btn.addEventHandler(ActionEvent.ACTION, e ->
-					{
-						_result = MsgBoxResult.CONTINUE;
-						stage.close();
-					});
-					break;
-				case CANCEL:
-				case NO:
-				case ABORT:
-					btn.addEventHandler(ActionEvent.ACTION, (ActionEvent event) ->
-					{
-						_result = MsgBoxResult.CANCEL;
-						stage.close();
-					});
-					break;
-			}
-			
-			btn.setMinSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
-			btn.setPrefSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
-			btn.setMaxSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
-			hboxButtons.getChildren().add(btn);
+			updateDetailBox();
+		});
+	}
+	
+	private final Map<MsgBoxButton, EventHandler<ActionEvent>> _buttonHandlers = new HashMap<>();
+	private MsgBoxButton _button;
+	private MsgBoxResult _result;
+	
+	private void updateDetailBox()
+	{
+		if (taDetails.getText().isEmpty())
+		{
+			vbContentArea.getChildren().remove(taDetails);
+		}
+		else if (!vbContentArea.getChildren().contains(taDetails))
+		{
+			vbContentArea.getChildren().add(taDetails);
 		}
 	}
 	
-	@Override
-	public boolean onRequestClose()
+	public void setIcon(Image icon)
 	{
-		return true;
+		ivIcon.setImage(icon);
+	}
+	
+	public void setHeadline(String headline)
+	{
+		lbHeadline.setText(headline);
+	}
+	
+	public void setDescription(String description)
+	{
+		lbDescription.setText(description);
+	}
+	
+	public void setButtons(Stage stage, MsgBoxButton... mbButtons)
+	{
+		for (MsgBoxButton mbButton : mbButtons)
+		{
+			Button button = new Button(mbButton.getButtonText(resources));
+			button.setOnAction(e ->
+			{
+				try
+				{
+					EventHandler<ActionEvent> handler = _buttonHandlers.get(mbButton);
+					if (handler != null)
+					{
+						handler.handle(e);
+					}
+				}
+				finally
+				{
+					_result = mbButton.getResult();
+					stage.close();
+				}
+			});
+			
+			hbButtons.getChildren().add(button);
+		}
+	}
+	
+	public void setDetails(String details)
+	{
+		taDetails.setText(details);
+	}
+	
+	public void setButtonHandler(MsgBoxButton button, EventHandler<ActionEvent> handler)
+	{
+		Objects.requireNonNull(button);
+		_buttonHandlers.put(button, handler);
+	}
+	
+	public MsgBoxButton getButton()
+	{
+		return _button;
 	}
 	
 	public MsgBoxResult getResult()

@@ -21,7 +21,6 @@ package com.l2jserver.tools.configurator.frontend.jfx.stage.mainstage;
 import java.util.Collection;
 
 import com.l2jserver.tools.configurator.frontend.jfx.JfxApplication;
-import com.l2jserver.tools.util.jfx.StageController;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -32,7 +31,7 @@ import javafx.scene.control.TabPane;
 /**
  * @author HorridoJoho
  */
-public class MainStageController implements StageController
+public class MainStageController
 {
 	@FXML
 	private MenuItem _menuFileLoad;
@@ -82,11 +81,5 @@ public class MainStageController implements StageController
 	void addConfigTabs(Collection<Tab> configTabs)
 	{
 		_tabsConfigurations.getTabs().addAll(configTabs);
-	}
-	
-	@Override
-	public boolean onRequestClose()
-	{
-		return true;
 	}
 }

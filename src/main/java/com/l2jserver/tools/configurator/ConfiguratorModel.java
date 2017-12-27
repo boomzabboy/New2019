@@ -30,10 +30,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import com.l2jserver.tools.configurator.frontend.IConfiguratorFrontend;
+import com.l2jserver.tools.configurator.frontend.ConfiguratorFrontend;
 import com.l2jserver.tools.configurator.model.Config;
 import com.l2jserver.tools.configurator.model.ConfigDirective;
 import com.l2jserver.tools.configurator.model.LinkedProperties;
+import com.l2jserver.tools.util.BackgroundTaskContext;
 
 /**
  * @author HorridoJoho
@@ -64,7 +65,7 @@ public final class ConfiguratorModel
 		return String.class;
 	}
 	
-	public Map<String, Config> loadConfigs(IConfiguratorFrontend frontend) throws IOException
+	public Map<String, Config> loadConfigs(BackgroundTaskContext<?> ctx, ConfiguratorFrontend frontend) throws IOException
 	{
 		try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(_CONFIGS_DEFAULT_PATH, "*.properties"))
 		{
@@ -72,6 +73,11 @@ public final class ConfiguratorModel
 			
 			for (Path dirEntry : dirStream)
 			{
+				if (ctx.isCancelationRequested())
+				{
+					return null;
+				}
+				
 				if (Files.isDirectory(dirEntry))
 				{
 					continue;
@@ -88,6 +94,11 @@ public final class ConfiguratorModel
 				
 				for (Map.Entry<String, String> directiveEntry : defaultProps.linkedEntrySet())
 				{
+					if (ctx.isCancelationRequested())
+					{
+						return null;
+					}
+					
 					config.addDirective(directiveEntry.getKey(), guessTypeClass(directiveEntry.getValue()), directiveEntry.getValue());
 				}
 				
@@ -102,6 +113,11 @@ public final class ConfiguratorModel
 					
 					for (Map.Entry<Object, Object> directiveEntry : overwriteProps.entrySet())
 					{
+						if (ctx.isCancelationRequested())
+						{
+							return null;
+						}
+						
 						ConfigDirective cd = config.getDirective((String) directiveEntry.getKey());
 						if (cd == null)
 						{
@@ -122,13 +138,23 @@ public final class ConfiguratorModel
 		return _configs;
 	}
 	
-	public void saveConfigs(IConfiguratorFrontend frontend) throws IOException
+	public void saveConfigs(BackgroundTaskContext<?> ctx, ConfiguratorFrontend frontend) throws IOException
 	{
 		for (Config config : _configs.values())
 		{
+			if (ctx.isCancelationRequested())
+			{
+				return;
+			}
+			
 			Properties props = null;
 			for (Map.Entry<String, ConfigDirective> directiveEntry : config.getDirectives().entrySet())
 			{
+				if (ctx.isCancelationRequested())
+				{
+					return;
+				}
+				
 				ConfigDirective directive = directiveEntry.getValue();
 				if (!directive.overwriteProperty().get() && directive.isDefaultProperty().get())
 				{

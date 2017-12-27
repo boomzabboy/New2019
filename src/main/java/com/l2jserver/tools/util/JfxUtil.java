@@ -26,16 +26,7 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
-import com.l2jserver.tools.util.jfx.BackgroundTask;
-import com.l2jserver.tools.util.jfx.BackgroundTaskRunner;
-
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.stage.Window;
 import javafx.util.BuilderFactory;
 import javafx.util.Callback;
 
@@ -44,6 +35,7 @@ import javafx.util.Callback;
  */
 public final class JfxUtil
 {
+	// TODO: put somewhere public so this can be reused
 	private static <T> void ifNotNull(T o, Consumer<T> c)
 	{
 		if (o != null)
@@ -131,33 +123,5 @@ public final class JfxUtil
 		ifNotNull(optClassLoader, (o) -> loader.setClassLoader(o));
 		ifNotNull(optRoot, (o) -> loader.setRoot(o));
 		loader.load();
-	}
-	
-	public static <T> T runBackgroundTaskWithDialog(Window owner, String title, Parent root, BackgroundTask<T> task) throws Throwable
-	{
-		Stage s = new Stage();
-		s.initOwner(owner);
-		s.initModality(Modality.WINDOW_MODAL);
-		s.initStyle(StageStyle.DECORATED);
-		
-		s.setTitle(title);
-		s.setScene(new Scene(root));
-		
-		return runBackgroundTaskWithDialog(s, task);
-	}
-	
-	public static <T> T runBackgroundTaskWithDialog(Stage s, BackgroundTask<T> task) throws Throwable
-	{
-		s.initModality(Modality.WINDOW_MODAL);
-		s.initStyle(StageStyle.UTILITY);
-		s.setResizable(false);
-		
-		BackgroundTaskRunner<T> runner = new BackgroundTaskRunner<>(s, task);
-		s.close();
-		if (runner.getThrown() != null)
-		{
-			throw runner.getThrown();
-		}
-		return runner.getResult();
 	}
 }

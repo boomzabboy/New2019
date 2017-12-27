@@ -18,11 +18,13 @@
  */
 package com.l2jserver.tools.util.jfx;
 
+import com.l2jserver.tools.util.BackgroundTaskContext;
+
 /**
  * @author HorridoJoho
  */
 @FunctionalInterface
 public interface BackgroundTask<T>
 {
-	T get() throws Throwable;
+	T get(BackgroundTaskContext<T> ctx) throws Throwable;
 }

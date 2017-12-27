@@ -435,8 +435,8 @@ public final class Rnd
 	}
 	
 	/**
-	 * @param n
-	 * @return
+	 * @param n The superior limit (exclusive)
+	 * @return the next integer
 	 * @see com.l2jserver.util.Rnd#get(int n)
 	 */
 	public static final int nextInt(final int n)
@@ -455,8 +455,8 @@ public final class Rnd
 	}
 	
 	/**
-	 * @param <T>
-	 * @param T[]
+	 * @param <T> the element type
+	 * @param array the array to pick a random element from
 	 * @return A random element in this array
 	 */
 	public static <T> T randomElement(T[] array)

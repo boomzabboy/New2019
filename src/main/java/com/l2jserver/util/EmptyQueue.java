@@ -25,7 +25,7 @@ import java.util.Queue;
 
 /**
  * @author UnAfraid
- * @param <E>
+ * @param <E> the element type
  */
 public final class EmptyQueue<E> implements Queue<E>
 {

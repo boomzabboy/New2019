@@ -23,7 +23,7 @@ import java.sql.Connection;
 import java.util.prefs.Preferences;
 
 import com.l2jserver.tools.util.SQLUtil;
-import com.l2jserver.tools.util.app.IApplicationFrontend;
+import com.l2jserver.tools.util.app.ApplicationFrontend;
 import com.l2jserver.util.file.filter.SQLFilter;
 
 /**
@@ -31,14 +31,14 @@ import com.l2jserver.util.file.filter.SQLFilter;
  */
 public class RunTasks extends Thread
 {
-	IApplicationFrontend _frontend;
+	ApplicationFrontend _frontend;
 	Connection _con;
 	boolean _cleanInstall;
 	String _db;
 	String _sqlDir;
 	String _cleanUpFile;
 	
-	public RunTasks(IApplicationFrontend frontend, Connection con, String db, String sqlDir, String cleanUpFile, boolean cleanInstall)
+	public RunTasks(ApplicationFrontend frontend, Connection con, String db, String sqlDir, String cleanUpFile, boolean cleanInstall)
 	{
 		_frontend = frontend;
 		_con = con;

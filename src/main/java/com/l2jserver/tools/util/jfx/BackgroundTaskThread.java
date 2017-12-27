@@ -20,34 +20,71 @@ package com.l2jserver.tools.util.jfx;
 
 import java.util.Objects;
 
+import com.l2jserver.tools.util.BackgroundTaskContext;
+
 import javafx.application.Platform;
-import javafx.stage.Modality;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
 /**
  * @author HorridoJoho
  */
-public class BackgroundTaskRunner<T> implements Runnable
+public final class BackgroundTaskThread<T> extends Thread implements BackgroundTaskContext<T>
 {
 	private final Stage _dialog;
 	private final BackgroundTask<T> _task;
-	private final Thread _thread;
+	private final BooleanProperty _isCancelationRequested;
 	
 	private Throwable _thrown;
 	private T _result;
 	
-	public BackgroundTaskRunner(Stage dialog, BackgroundTask<T> task)
+	public BackgroundTaskThread(Stage dialog, BackgroundTask<T> task)
 	{
+		super("L2J-TOOLS-JFX-BackgroundTaskThread");
 		Objects.requireNonNull(dialog);
 		Objects.requireNonNull(task);
+		
 		_dialog = dialog;
 		_task = task;
-		_thread = new Thread(this, "L2J-TOOLS-JFX-BackgroundTaskRunner");
-		
-		_dialog.initModality(Modality.WINDOW_MODAL);
+		_isCancelationRequested = new SimpleBooleanProperty(false);
+	}
+	
+	@Override
+	public void start()
+	{
 		_dialog.addEventHandler(WindowEvent.WINDOW_SHOWN, this::dialogShown);
 		_dialog.showAndWait();
+		try
+		{
+			// in case the dialog got closed by UI interaction (cancelation etc.), we need to wait for the thread to terminate
+			join();
+		}
+		catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+		
+		if (getThrown() != null)
+		{
+			throw new RuntimeException(getThrown());
+		}
+	}
+	
+	private void dialogShown(WindowEvent e)
+	{
+		_dialog.removeEventHandler(WindowEvent.WINDOW_SHOWN, this::dialogShown);
+		try
+		{
+			super.start();
+		}
+		catch (Throwable t)
+		{
+			_thrown = t;
+			finishDialog();
+		}
 	}
 	
 	@Override
@@ -55,7 +92,7 @@ public class BackgroundTaskRunner<T> implements Runnable
 	{
 		try
 		{
-			_result = _task.get();
+			_result = _task.get(this);
 		}
 		catch (Throwable t)
 		{
@@ -75,27 +112,32 @@ public class BackgroundTaskRunner<T> implements Runnable
 		}
 	}
 	
+	public ReadOnlyBooleanProperty isCancelationRequestedProperty()
+	{
+		return _isCancelationRequested;
+	}
+	
+	@Override
+	public void requestCancelation()
+	{
+		_isCancelationRequested.set(true);
+	}
+	
+	@Override
+	public boolean isCancelationRequested()
+	{
+		return _isCancelationRequested.get();
+	}
+	
+	@Override
 	public Throwable getThrown()
 	{
 		return _thrown;
 	}
 	
+	@Override
 	public T getResult()
 	{
 		return _result;
-	}
-	
-	private void dialogShown(WindowEvent e)
-	{
-		_dialog.removeEventHandler(WindowEvent.WINDOW_SHOWN, this::dialogShown);
-		try
-		{
-			_thread.start();
-		}
-		catch (Throwable t)
-		{
-			_thrown = t;
-			finishDialog();
-		}
 	}
 }
