@@ -27,6 +27,7 @@ import com.l2jserver.gameserver.SevenSigns;
 import com.l2jserver.gameserver.SevenSignsFestival;
 import com.l2jserver.gameserver.data.xml.impl.HitConditionBonusData;
 import com.l2jserver.gameserver.data.xml.impl.KarmaData;
+import com.l2jserver.gameserver.enums.DispelCategory;
 import com.l2jserver.gameserver.enums.ShotType;
 import com.l2jserver.gameserver.instancemanager.CastleManager;
 import com.l2jserver.gameserver.instancemanager.ClanHallManager;
@@ -554,7 +555,7 @@ public final class Formulas
 		return 1.5; // If all is true, then modifier will be 50% more
 	}
 	
-	public static double calcBlowDamage(L2Character attacker, L2Character target, Skill skill, byte shld, boolean ss)
+	public static double calcBlowDamage(L2Character attacker, L2Character target, Skill skill, byte shld, boolean ss, double power)
 	{
 		double defence = target.getPDef(attacker);
 		
@@ -572,8 +573,6 @@ public final class Formulas
 		}
 		
 		final boolean isPvP = attacker.isPlayable() && target.isPlayable();
-		final boolean isPvE = attacker.isPlayable() && target.isAttackable();
-		double power = skill.getPower(isPvP, isPvE);
 		double damage = 0;
 		double proximityBonus = attacker.isBehindTarget() ? 1.2 : attacker.isInFrontOfTarget() ? 1 : 1.1; // Behind: +20% - Side: +10% (TODO: values are unconfirmed, possibly custom, remove or update when confirmed);
 		double ssboost = ss ? 1.458 : 1;
@@ -624,7 +623,7 @@ public final class Formulas
 		if (attacker.isDebug())
 		{
 			final StatsSet set = new StatsSet();
-			set.set("skillPower", skill.getPower(isPvP, isPvE));
+			set.set("skillPower", power);
 			set.set("ssboost", ssboost);
 			set.set("proximityBonus", proximityBonus);
 			set.set("pvpBonus", pvpBonus);
@@ -646,7 +645,7 @@ public final class Formulas
 		return Math.max(damage, 1);
 	}
 	
-	public static double calcBackstabDamage(L2Character attacker, L2Character target, Skill skill, byte shld, boolean ss)
+	public static double calcBackstabDamage(L2Character attacker, L2Character target, Skill skill, byte shld, boolean ss, double power)
 	{
 		double defence = target.getPDef(attacker);
 		
@@ -664,7 +663,6 @@ public final class Formulas
 		}
 		
 		boolean isPvP = attacker.isPlayable() && target.isPlayer();
-		boolean isPvE = attacker.isPlayable() && target.isAttackable();
 		double damage = 0;
 		double proximityBonus = attacker.isBehindTarget() ? 1.2 : attacker.isInFrontOfTarget() ? 1 : 1.1; // Behind: +20% - Side: +10%
 		double ssboost = ss ? 1.458 : 1;
@@ -679,7 +677,7 @@ public final class Formulas
 		}
 		
 		// Initial damage
-		double baseMod = ((77 * (skill.getPower(isPvP, isPvE) + attacker.getPAtk(target))) / defence) * ssboost;
+		double baseMod = ((77 * (power + attacker.getPAtk(target))) / defence) * ssboost;
 		// Critical
 		double criticalMod = (attacker.calcStat(Stats.CRITICAL_DAMAGE, 1, target, skill));
 		double criticalModPos = (((attacker.calcStat(Stats.CRITICAL_DAMAGE_POS, 1, target, skill) - 1) / 2) + 1);
@@ -715,7 +713,7 @@ public final class Formulas
 		if (attacker.isDebug())
 		{
 			final StatsSet set = new StatsSet();
-			set.set("skillPower", skill.getPower(isPvP, isPvE));
+			set.set("skillPower", power);
 			set.set("ssboost", ssboost);
 			set.set("proximityBonus", proximityBonus);
 			set.set("pvpBonus", pvpBonus);
@@ -739,25 +737,14 @@ public final class Formulas
 	 * Calculated damage caused by ATTACK of attacker on target.
 	 * @param attacker player or NPC that makes ATTACK
 	 * @param target player or NPC, target of ATTACK
-	 * @param skill
 	 * @param shld
 	 * @param crit if the ATTACK have critical success
 	 * @param ss if weapon item was charged by soulshot
 	 * @return
 	 */
-	public static final double calcPhysDam(L2Character attacker, L2Character target, Skill skill, byte shld, boolean crit, boolean ss)
+	public static final double calcPhysDam(L2Character attacker, L2Character target, byte shld, boolean crit, boolean ss)
 	{
-		final boolean isPvP = attacker.isPlayable() && target.isPlayable();
-		final boolean isPvE = attacker.isPlayable() && target.isAttackable();
-		double proximityBonus = attacker.isBehindTarget() ? 1.2 : attacker.isInFrontOfTarget() ? 1 : 1.1; // Behind: +20% - Side: +10%
-		double damage = attacker.getPAtk(target);
 		double defence = target.getPDef(attacker);
-		
-		// Defense bonuses in PvP fight
-		if (isPvP)
-		{
-			defence *= (skill == null) ? target.calcStat(Stats.PVP_PHYSICAL_DEF, 1, null, null) : target.calcStat(Stats.PVP_PHYS_SKILL_DEF, 1, null, null);
-		}
 		
 		switch (shld)
 		{
@@ -775,15 +762,26 @@ public final class Formulas
 			}
 		}
 		
+		final boolean isPvP = attacker.isPlayable() && target.isPlayable();
+		double proximityBonus = attacker.isBehindTarget() ? 1.2 : attacker.isInFrontOfTarget() ? 1 : 1.1; // Behind: +20% - Side: +10%
+		double damage = attacker.getPAtk(target);
+		
+		if (isPvP)
+		{
+			// Defense bonuses in PvP fight
+			defence *= target.calcStat(Stats.PVP_PHYSICAL_DEF, 1, null, null);
+		}
+		
 		// Add soulshot boost.
 		int ssBoost = ss ? 2 : 1;
-		damage = (skill != null) ? ((damage * ssBoost) + skill.getPower(attacker, target, isPvP, isPvE)) : (damage * ssBoost);
+		damage *= ssBoost;
+		
 		if (crit)
 		{
 			// H5 Damage Formula
-			damage = 2 * attacker.calcStat(Stats.CRITICAL_DAMAGE, 1, target, skill) * attacker.calcStat(Stats.CRITICAL_DAMAGE_POS, 1, target, skill) * target.calcStat(Stats.DEFENCE_CRITICAL_DAMAGE, 1, target, null) * ((76 * damage * proximityBonus) / defence);
-			damage += ((attacker.calcStat(Stats.CRITICAL_DAMAGE_ADD, 0, target, skill) * 77) / defence);
-			damage += target.calcStat(Stats.DEFENCE_CRITICAL_DAMAGE_ADD, 0, target, skill);
+			damage = 2 * attacker.calcStat(Stats.CRITICAL_DAMAGE, 1, target, null) * attacker.calcStat(Stats.CRITICAL_DAMAGE_POS, 1, target, null) * target.calcStat(Stats.DEFENCE_CRITICAL_DAMAGE, 1, target, null) * ((76 * damage * proximityBonus) / defence);
+			damage += ((attacker.calcStat(Stats.CRITICAL_DAMAGE_ADD, 0, target, null) * 77) / defence);
+			damage += target.calcStat(Stats.DEFENCE_CRITICAL_DAMAGE_ADD, 0, target, null);
 		}
 		else
 		{
@@ -815,56 +813,17 @@ public final class Formulas
 		// Dmg bonuses in PvP fight
 		if (isPvP)
 		{
-			if (skill == null)
-			{
-				damage *= attacker.calcStat(Stats.PVP_PHYSICAL_DMG, 1, null, null);
-			}
-			else
-			{
-				damage *= attacker.calcStat(Stats.PVP_PHYS_SKILL_DMG, 1, null, null);
-			}
+			damage *= attacker.calcStat(Stats.PVP_PHYSICAL_DMG, 1, null, null);
 		}
 		
-		// Physical skill dmg boost
-		if (skill != null)
-		{
-			damage = attacker.calcStat(Stats.PHYSICAL_SKILL_POWER, damage, null, null);
-		}
-		
-		damage *= calcAttributeBonus(attacker, target, skill);
+		damage *= calcAttributeBonus(attacker, target, null);
 		if (target.isAttackable())
 		{
-			final L2Weapon weapon = attacker.getActiveWeaponItem();
-			if ((weapon != null) && ((weapon.getItemType() == WeaponType.BOW) || (weapon.getItemType() == WeaponType.CROSSBOW)))
-			{
-				if (skill != null)
-				{
-					damage *= attacker.calcStat(Stats.PVE_BOW_SKILL_DMG, 1, null, null);
-				}
-				else
-				{
-					damage *= attacker.calcStat(Stats.PVE_BOW_DMG, 1, null, null);
-				}
-			}
-			else
-			{
-				damage *= attacker.calcStat(Stats.PVE_PHYSICAL_DMG, 1, null, null);
-			}
 			if (!target.isRaid() && !target.isRaidMinion() && (target.getLevel() >= Config.MIN_NPC_LVL_DMG_PENALTY) && (attacker.getActingPlayer() != null) && ((target.getLevel() - attacker.getActingPlayer().getLevel()) >= 2))
 			{
 				int lvlDiff = target.getLevel() - attacker.getActingPlayer().getLevel() - 1;
-				if (skill != null)
-				{
-					if (lvlDiff >= Config.NPC_SKILL_DMG_PENALTY.size())
-					{
-						damage *= Config.NPC_SKILL_DMG_PENALTY.get(Config.NPC_SKILL_DMG_PENALTY.size() - 1);
-					}
-					else
-					{
-						damage *= Config.NPC_SKILL_DMG_PENALTY.get(lvlDiff);
-					}
-				}
-				else if (crit)
+				
+				if (crit)
 				{
 					if (lvlDiff >= Config.NPC_CRIT_DMG_PENALTY.size())
 					{
@@ -891,7 +850,102 @@ public final class Formulas
 		return damage;
 	}
 	
-	public static final double calcMagicDam(L2Character attacker, L2Character target, Skill skill, byte shld, boolean sps, boolean bss, boolean mcrit)
+	/**
+	 * Calculated damage caused by skill ATTACK of attacker on target.
+	 * @param attacker player or NPC that makes ATTACK
+	 * @param target player or NPC, target of ATTACK
+	 * @param skill
+	 * @param shld
+	 * @param crit if the ATTACK have critical success
+	 * @param ss if weapon item was charged by soulshot
+	 * @return
+	 */
+	public static final double calcSkillPhysDam(L2Character attacker, L2Character target, Skill skill, byte shld, boolean crit, boolean ss, double power)
+	{
+		double defence = target.getPDef(attacker);
+		
+		switch (shld)
+		{
+			case SHIELD_DEFENSE_SUCCEED:
+			{
+				if (!Config.ALT_GAME_SHIELD_BLOCKS)
+				{
+					defence += target.getShldDef();
+				}
+				break;
+			}
+			case SHIELD_DEFENSE_PERFECT_BLOCK: // perfect block
+			{
+				return 1.;
+			}
+		}
+		
+		final boolean isPvP = attacker.isPlayable() && target.isPlayable();
+		double proximityBonus = attacker.isBehindTarget() ? 1.2 : attacker.isInFrontOfTarget() ? 1 : 1.1; // Behind: +20% - Side: +10% (TODO: values are unconfirmed, possibly custom, remove or update when confirmed)
+		double damage = 0;
+		double ssBoost = ss ? 2 : 1;
+		double pvpBonus = 1;
+		
+		if (isPvP)
+		{
+			// Damage bonuses in PvP fight
+			pvpBonus = attacker.getStat().calcStat(Stats.PVP_PHYS_SKILL_DMG, 1.0);
+			// Defense bonuses in PvP fight
+			defence *= target.getStat().calcStat(Stats.PVP_PHYS_SKILL_DEF, 1.0);
+		}
+		
+		// Initial damage
+		double baseMod = ((77 * (power + (attacker.getPAtk(target) * ssBoost))) / defence);
+		
+		double penaltyMod = 1;
+		if ((target instanceof L2Attackable) && !target.isRaid() && !target.isRaidMinion() && (target.getLevel() >= Config.MIN_NPC_LVL_DMG_PENALTY) && (attacker.getActingPlayer() != null) && ((target.getLevel() - attacker.getActingPlayer().getLevel()) >= 2))
+		{
+			int lvlDiff = target.getLevel() - attacker.getActingPlayer().getLevel() - 1;
+			
+			if (lvlDiff >= Config.NPC_SKILL_DMG_PENALTY.size())
+			{
+				penaltyMod *= Config.NPC_SKILL_DMG_PENALTY.get(Config.NPC_SKILL_DMG_PENALTY.size() - 1);
+			}
+			else
+			{
+				penaltyMod *= Config.NPC_SKILL_DMG_PENALTY.get(lvlDiff);
+			}
+			
+			if (crit)
+			{
+				if (lvlDiff >= Config.NPC_CRIT_DMG_PENALTY.size())
+				{
+					penaltyMod *= Config.NPC_CRIT_DMG_PENALTY.get(Config.NPC_CRIT_DMG_PENALTY.size() - 1);
+				}
+				else
+				{
+					penaltyMod *= Config.NPC_CRIT_DMG_PENALTY.get(lvlDiff);
+				}
+			}
+			else
+			{
+				if (lvlDiff >= Config.NPC_DMG_PENALTY.size())
+				{
+					penaltyMod *= Config.NPC_DMG_PENALTY.get(Config.NPC_DMG_PENALTY.size() - 1);
+				}
+				else
+				{
+					penaltyMod *= Config.NPC_DMG_PENALTY.get(lvlDiff);
+				}
+			}
+		}
+		
+		damage = baseMod * proximityBonus * pvpBonus;
+		damage *= calcAttackTraitBonus(attacker, target);
+		damage *= calcAttributeBonus(attacker, target, skill);
+		damage *= attacker.getRandomDamageMultiplier();
+		damage *= penaltyMod;
+		damage = attacker.getStat().calcStat(Stats.PHYSICAL_SKILL_POWER, damage);
+		
+		return Math.max(damage, 1);
+	}
+	
+	public static final double calcMagicDam(L2Character attacker, L2Character target, Skill skill, byte shld, boolean sps, boolean bss, boolean mcrit, double power)
 	{
 		double mDef = target.getMDef(attacker, skill);
 		switch (shld)
@@ -909,7 +963,6 @@ public final class Formulas
 		
 		double mAtk = attacker.getMAtk(target, skill);
 		final boolean isPvP = attacker.isPlayable() && target.isPlayable();
-		final boolean isPvE = attacker.isPlayable() && target.isAttackable();
 		
 		// PvP bonuses for defense
 		if (isPvP)
@@ -927,7 +980,7 @@ public final class Formulas
 		// Bonus Spirit shot
 		mAtk *= bss ? 4 : sps ? 2 : 1;
 		// MDAM Formula.
-		double damage = ((91 * Math.sqrt(mAtk)) / mDef) * skill.getPower(attacker, target, isPvP, isPvE);
+		double damage = ((91 * Math.sqrt(mAtk)) / mDef) * power;
 		
 		// Failure calculation
 		if (Config.ALT_GAME_MAGICFAILURES && !calcMagicSuccess(attacker, target, skill))
@@ -983,7 +1036,6 @@ public final class Formulas
 		
 		if (target.isAttackable())
 		{
-			damage *= attacker.calcStat(Stats.PVE_MAGICAL_DMG, 1, null, null);
 			if (!target.isRaid() && !target.isRaidMinion() && (target.getLevel() >= Config.MIN_NPC_LVL_DMG_PENALTY) && (attacker.getActingPlayer() != null) && ((target.getLevel() - attacker.getActingPlayer().getLevel()) >= 2))
 			{
 				int lvlDiff = target.getLevel() - attacker.getActingPlayer().getLevel() - 1;
@@ -1013,11 +1065,9 @@ public final class Formulas
 		}
 		
 		int mAtk = attacker.getCubicPower();
-		final boolean isPvP = target.isPlayable();
-		final boolean isPvE = target.isAttackable();
 		
 		// Cubics MDAM Formula (similar to PDAM formula, but using 91 instead of 70, also resisted by mDef).
-		double damage = 91 * ((mAtk + skill.getPower(isPvP, isPvE)) / mDef);
+		double damage = 91 * ((mAtk + skill.getPower()) / mDef);
 		
 		// Failure calculation
 		L2PcInstance owner = attacker.getOwner();
@@ -1069,7 +1119,6 @@ public final class Formulas
 		
 		if (target.isAttackable())
 		{
-			damage *= attacker.getOwner().calcStat(Stats.PVE_MAGICAL_DMG, 1, null, null);
 			if (!target.isRaid() && !target.isRaidMinion() && (target.getLevel() >= Config.MIN_NPC_LVL_DMG_PENALTY) && (attacker.getOwner() != null) && ((target.getLevel() - attacker.getOwner().getLevel()) >= 2))
 			{
 				int lvlDiff = target.getLevel() - attacker.getOwner().getLevel() - 1;
@@ -1086,30 +1135,28 @@ public final class Formulas
 		return damage;
 	}
 	
+	/**
+	 * Returns true in case of critical hit
+	 * @param attacker
+	 * @param target
+	 * @return
+	 */
 	public static final boolean calcCrit(L2Character attacker, L2Character target)
 	{
-		return calcCrit(attacker, target, null);
+		double rate = attacker.getStat().calcStat(Stats.CRITICAL_RATE_POS, attacker.getStat().getCriticalHit(target, null));
+		return (target.getStat().calcStat(Stats.DEFENCE_CRITICAL_RATE, rate, null, null) + target.getStat().calcStat(Stats.DEFENCE_CRITICAL_RATE_ADD, 0, null, null)) > Rnd.get(1000);
 	}
 	
 	/**
-	 * Returns true in case of critical hit
+	 * Returns true in case of physical skill critical hit
 	 * @param attacker
 	 * @param target
 	 * @param skill
 	 * @return
 	 */
-	public static final boolean calcCrit(L2Character attacker, L2Character target, Skill skill)
+	public static final boolean calcSkillCrit(L2Character attacker, L2Character target, int criticalChance)
 	{
-		double rate = 0.d;
-		if (skill != null)
-		{
-			rate = skill.getBaseCritRate() * 10 * BaseStats.STR.calcBonus(attacker);
-		}
-		else
-		{
-			rate = (int) attacker.getStat().calcStat(Stats.CRITICAL_RATE_POS, attacker.getStat().getCriticalHit(target, null));
-		}
-		return (target.getStat().calcStat(Stats.DEFENCE_CRITICAL_RATE, rate, null, null) + target.getStat().calcStat(Stats.DEFENCE_CRITICAL_RATE_ADD, 0, null, null)) > Rnd.get(1000);
+		return (BaseStats.STR.calcBonus(attacker) * criticalChance) > (Rnd.nextDouble() * 100);
 	}
 	
 	public static final boolean calcMCrit(double mRate)
@@ -1164,33 +1211,30 @@ public final class Formulas
 		return Rnd.get(100) < rate;
 	}
 	
-	/**
-	 * Calculate delay (in milliseconds) before next ATTACK
-	 * @param attacker
-	 * @param target
-	 * @param rate
-	 * @return
-	 */
-	public static final int calcPAtkSpd(L2Character attacker, L2Character target, double rate)
+	public static double calcCastTime(L2Character character, Skill skill)
 	{
-		// measured Oct 2006 by Tank6585, formula by Sami
-		// attack speed 312 equals 1500 ms delay... (or 300 + 40 ms delay?)
-		if (rate < 2)
+		double skillAnimTime = skill.getHitTime();
+		if (!skill.isChanneling() || (skill.getChannelingSkillId() == 0))
 		{
-			return 2700;
+			// Calculate the Casting Time of the "Non-Static" Skills (with caster PAtk/MAtkSpd).
+			if (!skill.isStatic())
+			{
+				final double speed = skill.isMagic() ? character.getMAtkSpd() : character.getPAtkSpd();
+				skillAnimTime = (skillAnimTime / speed) * 333;
+			}
+			
+			// Calculate the Casting Time of Magic Skills (reduced in 40% if using SPS/BSPS)
+			if (skill.isMagic() && (character.isChargedShot(ShotType.SPIRITSHOTS) || character.isChargedShot(ShotType.BLESSED_SPIRITSHOTS)))
+			{
+				skillAnimTime = skillAnimTime * 0.6;
+			}
+			
+			if ((skillAnimTime < 500) && (skill.getHitTime() > 500))
+			{
+				skillAnimTime = 500.0;
+			}
 		}
-		return (int) (470000 / rate);
-	}
-	
-	/**
-	 * Calculate delay (in milliseconds) for skills cast
-	 * @param speed
-	 * @param skillTime
-	 * @return
-	 */
-	public static final double calcAtkSpd(double speed, double skillTime)
-	{
-		return (skillTime / speed) * 333;
+		return skillAnimTime;
 	}
 	
 	/**
@@ -1225,11 +1269,6 @@ public final class Formulas
 	 */
 	public static byte calcShldUse(L2Character attacker, L2Character target, Skill skill, boolean sendSysMsg)
 	{
-		if ((skill != null) && skill.ignoreShield())
-		{
-			return 0;
-		}
-		
 		L2Item item = target.getSecondaryWeaponItem();
 		if ((item == null) || !(item instanceof L2Armor) || (((L2Armor) item).getItemType() == ArmorType.SIGIL))
 		{
@@ -1280,7 +1319,6 @@ public final class Formulas
 					break;
 			}
 		}
-		
 		return shldSuccess;
 	}
 	
@@ -1430,16 +1468,9 @@ public final class Formulas
 	
 	public static boolean calcCubicSkillSuccess(L2CubicInstance attacker, L2Character target, Skill skill, byte shld)
 	{
-		if (skill.isDebuff())
+		if (skill.isDebuff() && target.isDebuffBlocked())
 		{
-			if (skill.getPower() == -1)
-			{
-				return true;
-			}
-			else if (target.isDebuffBlocked())
-			{
-				return false;
-			}
+			return false;
 		}
 		
 		// Perfect Shield Block.
@@ -1455,7 +1486,7 @@ public final class Formulas
 		}
 		
 		// Calculate BaseRate.
-		double baseRate = skill.getPower();
+		double baseRate = skill.getActivateRate();
 		double statMod = skill.getBasicProperty().calcBonus(target);
 		double rate = (baseRate / statMod);
 		
@@ -1494,11 +1525,6 @@ public final class Formulas
 	
 	public static boolean calcMagicSuccess(L2Character attacker, L2Character target, Skill skill)
 	{
-		if (skill.getPower() == -1)
-		{
-			return true;
-		}
-		
 		// FIXME: Fix this LevelMod Formula.
 		int lvlDifference = (target.getLevel() - (skill.getMagicLevel() > 0 ? skill.getMagicLevel() : attacker.getLevel()));
 		double lvlModifier = Math.pow(1.3, lvlDifference);
@@ -1533,13 +1559,11 @@ public final class Formulas
 		return (Rnd.get(100) < rate);
 	}
 	
-	public static double calcManaDam(L2Character attacker, L2Character target, Skill skill, byte shld, boolean sps, boolean bss, boolean mcrit)
+	public static double calcManaDam(L2Character attacker, L2Character target, Skill skill, byte shld, boolean sps, boolean bss, boolean mcrit, double power)
 	{
 		// Formula: (SQR(M.Atk)*Power*(Target Max MP/97))/M.Def
 		double mAtk = attacker.getMAtk(target, skill);
 		double mDef = target.getMDef(attacker, skill);
-		final boolean isPvP = attacker.isPlayable() && target.isPlayable();
-		final boolean isPvE = attacker.isPlayable() && target.isAttackable();
 		double mp = target.getMaxMp();
 		
 		switch (shld)
@@ -1554,12 +1578,11 @@ public final class Formulas
 		// Bonus Spiritshot
 		mAtk *= bss ? 4 : sps ? 2 : 1;
 		
-		double damage = (Math.sqrt(mAtk) * skill.getPower(attacker, target, isPvP, isPvE) * (mp / 97)) / mDef;
+		double damage = (Math.sqrt(mAtk) * power * (mp / 97)) / mDef;
 		damage *= calcGeneralTraitBonus(attacker, target, skill.getTraitType(), false);
 		
 		if (target.isAttackable())
 		{
-			damage *= attacker.calcStat(Stats.PVE_MAGICAL_DMG, 1, null, null);
 			if (!target.isRaid() && !target.isRaidMinion() && (target.getLevel() >= Config.MIN_NPC_LVL_DMG_PENALTY) && (attacker.getActingPlayer() != null) && ((target.getLevel() - attacker.getActingPlayer().getLevel()) >= 2))
 			{
 				int lvlDiff = target.getLevel() - attacker.getActingPlayer().getLevel() - 1;
@@ -1896,6 +1919,7 @@ public final class Formulas
 			{
 				attacker.reduceCurrentHp(counterdmg, target, skill);
 			}
+			target.notifyDamageReceived(counterdmg, attacker, skill, crit, false, true);
 		}
 	}
 	
@@ -1911,8 +1935,7 @@ public final class Formulas
 		{
 			return false;
 		}
-		final double reflectChance = target.calcStat(skill.isMagic() ? Stats.REFLECT_SKILL_MAGIC : Stats.REFLECT_SKILL_PHYSIC, 0, null, skill);
-		return reflectChance > Rnd.get(100);
+		return target.calcStat(skill.isMagic() ? Stats.REFLECT_SKILL_MAGIC : Stats.REFLECT_SKILL_PHYSIC, 0, null, skill) > Rnd.get(100);
 	}
 	
 	/**
@@ -1927,15 +1950,13 @@ public final class Formulas
 		{
 			return 0;
 		}
-		final double damage = cha.calcStat(Stats.FALL, (fallHeight * cha.getMaxHp()) / 1000.0, null, null);
-		return damage;
+		return cha.calcStat(Stats.FALL, (fallHeight * cha.getMaxHp()) / 1000.0, null, null);
 	}
 	
-	public static boolean calcBlowSuccess(L2Character activeChar, L2Character target, Skill skill)
+	public static boolean calcBlowSuccess(L2Character activeChar, L2Character target, Skill skill, int blowChance)
 	{
-		double dexMod = BaseStats.DEX.calcBonus(activeChar);
 		// Apply DEX Mod.
-		double blowChance = skill.getBlowChance();
+		double dexMod = BaseStats.DEX.calcBonus(activeChar);
 		// Apply Position Bonus (TODO: values are unconfirmed, possibly custom, remove or update when confirmed).
 		double sideMod = (activeChar.isInFrontOfTarget()) ? 1 : (activeChar.isBehindTarget()) ? 2 : 1.5;
 		// Apply all mods.
@@ -1956,12 +1977,12 @@ public final class Formulas
 		return Rnd.get(100) < rate;
 	}
 	
-	public static List<BuffInfo> calcCancelStealEffects(L2Character activeChar, L2Character target, Skill skill, String slot, int rate, int max)
+	public static List<BuffInfo> calcCancelEffects(L2Character activeChar, L2Character target, Skill skill, DispelCategory slot, int rate, int max)
 	{
 		final List<BuffInfo> canceled = new ArrayList<>(max);
 		switch (slot)
 		{
-			case "buff":
+			case BUFF:
 			{
 				// Resist Modifier.
 				int cancelMagicLvl = skill.getMagicLevel();
@@ -1983,13 +2004,13 @@ public final class Formulas
 				
 				// Prevent initialization.
 				final List<BuffInfo> buffs = target.getEffectList().hasBuffs() ? new ArrayList<>(target.getEffectList().getBuffs()) : new ArrayList<>(1);
-				if (target.getEffectList().hasTriggered())
-				{
-					buffs.addAll(target.getEffectList().getTriggered());
-				}
 				if (target.getEffectList().hasDances())
 				{
 					buffs.addAll(target.getEffectList().getDances());
+				}
+				if (target.getEffectList().hasTriggered())
+				{
+					buffs.addAll(target.getEffectList().getTriggered());
 				}
 				for (int i = buffs.size() - 1; i >= 0; i--) // reverse order
 				{
@@ -2006,7 +2027,68 @@ public final class Formulas
 				}
 				break;
 			}
-			case "debuff":
+			case DEBUFF:
+			{
+				final List<BuffInfo> debuffs = new ArrayList<>(target.getEffectList().getDebuffs());
+				for (int i = debuffs.size() - 1; i >= 0; i--)
+				{
+					BuffInfo info = debuffs.get(i);
+					if (info.getSkill().isDebuff() && info.getSkill().canBeDispeled() && (Rnd.get(100) <= rate))
+					{
+						canceled.add(info);
+						if (canceled.size() >= max)
+						{
+							break;
+						}
+					}
+				}
+				break;
+			}
+		}
+		return canceled;
+	}
+	
+	public static List<BuffInfo> calcStealEffects(L2Character activeChar, L2Character target, Skill skill, DispelCategory slot, int rate, int max)
+	{
+		final List<BuffInfo> canceled = new ArrayList<>(max);
+		final int cancelMagicLvl = skill.getMagicLevel();
+		switch (slot)
+		{
+			case BUFF:
+			{
+				// Prevent initialization.
+				final List<BuffInfo> buffs = target.getEffectList().hasBuffs() ? new ArrayList<>(target.getEffectList().getBuffs()) : new ArrayList<>(max);
+				if (target.getEffectList().hasDances())
+				{
+					buffs.addAll(target.getEffectList().getDances());
+				}
+				if (target.getEffectList().hasTriggered())
+				{
+					buffs.addAll(target.getEffectList().getTriggered());
+				}
+				
+				int pos = max;
+				for (int i = buffs.size() - 1; i >= 0; i--)
+				{
+					BuffInfo info = buffs.get(i);
+					if (!info.getSkill().canBeStolen())
+					{
+						continue;
+					}
+					pos--;
+					if (calcCancelSuccess(info, cancelMagicLvl, rate, skill))
+					{
+						canceled.add(info);
+					}
+					
+					if (pos < 1)
+					{
+						break;
+					}
+				}
+				break;
+			}
+			case DEBUFF:
 			{
 				final List<BuffInfo> debuffs = new ArrayList<>(target.getEffectList().getDebuffs());
 				for (int i = debuffs.size() - 1; i >= 0; i--)

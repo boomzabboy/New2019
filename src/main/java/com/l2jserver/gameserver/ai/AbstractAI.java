@@ -52,7 +52,7 @@ import com.l2jserver.gameserver.taskmanager.AttackStanceTaskManager;
  */
 public abstract class AbstractAI implements Ctrl
 {
-	protected static final Logger _log = LoggerFactory.getLogger(AbstractAI.class);
+	protected static final Logger LOG = LoggerFactory.getLogger(AbstractAI.class);
 	
 	private NextAction _nextAction;
 	
@@ -125,7 +125,7 @@ public abstract class AbstractAI implements Ctrl
 			}
 			catch (Exception e)
 			{
-				_log.warn("{}: There has been a problem running the follow task!", getClass().getSimpleName(), e);
+				LOG.warn("{}: There has been a problem running the follow task!", getClass().getSimpleName(), e);
 			}
 		}
 	}
@@ -448,7 +448,7 @@ public abstract class AbstractAI implements Ctrl
 	
 	protected abstract void onEvtAttacked(L2Character attacker);
 	
-	protected abstract void onEvtAggression(L2Character target, int aggro);
+	protected abstract void onEvtAggression(L2Character target, long aggro);
 	
 	protected abstract void onEvtStunned(L2Character attacker);
 	

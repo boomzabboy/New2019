@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import com.l2jserver.Config;
 import com.l2jserver.gameserver.data.sql.impl.ClanTable;
@@ -58,7 +56,6 @@ import com.l2jserver.gameserver.network.serverpackets.MagicSkillUse;
 import com.l2jserver.gameserver.network.serverpackets.NpcHtmlMessage;
 import com.l2jserver.gameserver.network.serverpackets.SystemMessage;
 import com.l2jserver.gameserver.network.serverpackets.UserInfo;
-import com.l2jserver.gameserver.util.Util;
 import com.l2jserver.util.StringUtil;
 
 /**
@@ -129,7 +126,7 @@ public class L2VillageMasterInstance extends L2NpcInstance
 			}
 			case "rename_pledge":
 			{
-				if (st.countTokens() > 2)
+				if (st.countTokens() > 1)
 				{
 					renameSubPledge(player, Integer.parseInt(st.nextToken()), st.nextToken());
 				}
@@ -137,7 +134,7 @@ public class L2VillageMasterInstance extends L2NpcInstance
 			}
 			case "create_royal":
 			{
-				if (st.countTokens() > 2)
+				if (st.countTokens() > 1)
 				{
 					createSubPledge(player, st.nextToken(), st.nextToken(), L2Clan.SUBUNIT_ROYAL1, 6);
 				}
@@ -145,7 +142,7 @@ public class L2VillageMasterInstance extends L2NpcInstance
 			}
 			case "create_knight":
 			{
-				if (st.countTokens() > 2)
+				if (st.countTokens() > 1)
 				{
 					createSubPledge(player, st.nextToken(), st.nextToken(), L2Clan.SUBUNIT_KNIGHT1, 7);
 				}
@@ -153,7 +150,7 @@ public class L2VillageMasterInstance extends L2NpcInstance
 			}
 			case "assign_subpl_leader":
 			{
-				if (st.countTokens() > 2)
+				if (st.countTokens() > 1)
 				{
 					assignSubPledgeLeader(player, st.nextToken(), st.nextToken());
 				}
@@ -539,7 +536,7 @@ public class L2VillageMasterInstance extends L2NpcInstance
 								return;
 							}
 							
-							player.setActiveClass(player.getTotalSubClasses());
+							player.changeActiveClass(player.getTotalSubClasses());
 							
 							html.setFile(player.getHtmlPrefix(), "data/html/villagemaster/SubClass_AddOk.htm");
 							
@@ -588,7 +585,7 @@ public class L2VillageMasterInstance extends L2NpcInstance
 							}
 						}
 						
-						player.setActiveClass(paramOne);
+						player.changeActiveClass(paramOne);
 						player.sendPacket(SystemMessageId.SUBCLASS_TRANSFER_COMPLETED); // Transfer completed.
 						return;
 					case 6: // Change/Cancel Subclass - Choice
@@ -650,7 +647,7 @@ public class L2VillageMasterInstance extends L2NpcInstance
 							player.stopAllEffectsExceptThoseThatLastThroughDeath(); // all effects from old subclass stopped!
 							player.stopAllEffectsNotStayOnSubclassChange();
 							player.stopCubics();
-							player.setActiveClass(paramOne);
+							player.changeActiveClass(paramOne);
 							
 							html.setFile(player.getHtmlPrefix(), "data/html/villagemaster/SubClass_ModifyOk.htm");
 							html.replace("%name%", ClassListData.getInstance().getClass(paramTwo).getClientCode());
@@ -662,7 +659,7 @@ public class L2VillageMasterInstance extends L2NpcInstance
 							/**
 							 * This isn't good! modifySubClass() removed subclass from memory we must update _classIndex! Else IndexOutOfBoundsException can turn up some place down the line along with other seemingly unrelated problems.
 							 */
-							player.setActiveClass(0); // Also updates _classIndex plus switching _classid to baseclass.
+							player.changeActiveClass(0); // Also updates _classIndex plus switching _classid to baseclass.
 							
 							player.sendMessage("The sub class could not be added, you have been reverted to your base class.");
 							return;
@@ -979,12 +976,12 @@ public class L2VillageMasterInstance extends L2NpcInstance
 			
 			return;
 		}
-		if (!Util.isAlphaNumeric(clanName) || !isValidName(clanName) || (2 > clanName.length()))
+		if (!isValidName(clanName) || (clanName.length() < 2))
 		{
 			player.sendPacket(SystemMessageId.CLAN_NAME_INCORRECT);
 			return;
 		}
-		if (clanName.length() > 16)
+		if (clanName.length() > ClanTable.CLAN_NAME_MAX_LENGHT)
 		{
 			player.sendPacket(SystemMessageId.CLAN_NAME_TOO_LONG);
 			return;
@@ -1084,12 +1081,12 @@ public class L2VillageMasterInstance extends L2NpcInstance
 			player.sendMessage("Pledge don't exists.");
 			return;
 		}
-		if (!Util.isAlphaNumeric(pledgeName) || !isValidName(pledgeName) || (2 > pledgeName.length()))
+		if (!isValidName(pledgeName) || (pledgeName.length() < 2))
 		{
 			player.sendPacket(SystemMessageId.CLAN_NAME_INCORRECT);
 			return;
 		}
-		if (pledgeName.length() > 16)
+		if (pledgeName.length() > ClanTable.CLAN_NAME_MAX_LENGHT)
 		{
 			player.sendPacket(SystemMessageId.CLAN_NAME_TOO_LONG);
 			return;
@@ -1216,16 +1213,6 @@ public class L2VillageMasterInstance extends L2NpcInstance
 	
 	private static boolean isValidName(String name)
 	{
-		Pattern pattern;
-		try
-		{
-			pattern = Pattern.compile(Config.CLAN_NAME_TEMPLATE);
-		}
-		catch (PatternSyntaxException e)
-		{
-			_log.warning("ERROR: Wrong pattern for clan name!");
-			pattern = Pattern.compile(".*");
-		}
-		return pattern.matcher(name).matches();
+		return Config.CLAN_NAME_TEMPLATE.matcher(name).matches();
 	}
 }

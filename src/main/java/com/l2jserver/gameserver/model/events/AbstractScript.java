@@ -47,7 +47,8 @@ import com.l2jserver.gameserver.ai.CtrlIntention;
 import com.l2jserver.gameserver.data.xml.impl.DoorData;
 import com.l2jserver.gameserver.data.xml.impl.NpcData;
 import com.l2jserver.gameserver.datatables.ItemTable;
-import com.l2jserver.gameserver.enums.QuestSound;
+import com.l2jserver.gameserver.enums.audio.IAudio;
+import com.l2jserver.gameserver.enums.audio.Sound;
 import com.l2jserver.gameserver.instancemanager.CastleManager;
 import com.l2jserver.gameserver.instancemanager.FortManager;
 import com.l2jserver.gameserver.instancemanager.InstanceManager;
@@ -100,10 +101,15 @@ import com.l2jserver.gameserver.model.events.impl.character.npc.attackable.OnAtt
 import com.l2jserver.gameserver.model.events.impl.character.npc.attackable.OnAttackableKill;
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerLogin;
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerLogout;
+import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerProfessionCancel;
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerProfessionChange;
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerSkillLearn;
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerSummonSpawn;
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerSummonTalk;
+import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerTutorialClientEvent;
+import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerTutorialCmd;
+import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerTutorialEvent;
+import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerTutorialQuestionMark;
 import com.l2jserver.gameserver.model.events.impl.character.trap.OnTrapAction;
 import com.l2jserver.gameserver.model.events.impl.item.OnItemBypassEvent;
 import com.l2jserver.gameserver.model.events.impl.item.OnItemTalk;
@@ -130,7 +136,6 @@ import com.l2jserver.gameserver.model.items.L2Item;
 import com.l2jserver.gameserver.model.items.instance.L2ItemInstance;
 import com.l2jserver.gameserver.model.olympiad.Olympiad;
 import com.l2jserver.gameserver.model.skills.Skill;
-import com.l2jserver.gameserver.model.stats.Stats;
 import com.l2jserver.gameserver.model.zone.L2ZoneType;
 import com.l2jserver.gameserver.network.NpcStringId;
 import com.l2jserver.gameserver.network.SystemMessageId;
@@ -434,6 +439,28 @@ public abstract class AbstractScript implements INamable
 	protected final List<AbstractEventListener> setNpcFirstTalkId(Consumer<OnNpcFirstTalk> callback, Collection<Integer> npcIds)
 	{
 		return registerConsumer(callback, EventType.ON_NPC_FIRST_TALK, ListenerRegisterType.NPC, npcIds);
+	}
+	
+	// ---------------------------------------------------------------------------------------------------------------------------
+	
+	protected final List<AbstractEventListener> setPlayerTutorialEvent(Consumer<OnPlayerTutorialEvent> callback)
+	{
+		return registerConsumer(callback, EventType.ON_PLAYER_TUTORIAL_EVENT, ListenerRegisterType.GLOBAL);
+	}
+	
+	protected final List<AbstractEventListener> setPlayerTutorialClientEvent(Consumer<OnPlayerTutorialClientEvent> callback)
+	{
+		return registerConsumer(callback, EventType.ON_PLAYER_TUTORIAL_CLIENT_EVENT, ListenerRegisterType.GLOBAL);
+	}
+	
+	protected final List<AbstractEventListener> setPlayerTutorialQuestionMark(Consumer<OnPlayerTutorialQuestionMark> callback)
+	{
+		return registerConsumer(callback, EventType.ON_PLAYER_TUTORIAL_QUESTION_MARK, ListenerRegisterType.GLOBAL);
+	}
+	
+	protected final List<AbstractEventListener> setPlayerTutorialCmd(Consumer<OnPlayerTutorialCmd> callback)
+	{
+		return registerConsumer(callback, EventType.ON_PLAYER_TUTORIAL_CMD, ListenerRegisterType.GLOBAL);
 	}
 	
 	// ---------------------------------------------------------------------------------------------------------------------------
@@ -1170,6 +1197,16 @@ public abstract class AbstractScript implements INamable
 	protected final List<AbstractEventListener> setPlayerProfessionChangeId(Consumer<OnPlayerProfessionChange> callback)
 	{
 		return registerConsumer(callback, EventType.ON_PLAYER_PROFESSION_CHANGE, ListenerRegisterType.GLOBAL);
+	}
+	
+	/**
+	 * Provides instant callback operation when player's cancel profession
+	 * @param callback
+	 * @return
+	 */
+	protected final List<AbstractEventListener> setPlayerProfessionCancelId(Consumer<OnPlayerProfessionCancel> callback)
+	{
+		return registerConsumer(callback, EventType.ON_PLAYER_PROFESSION_CANCEL, ListenerRegisterType.GLOBAL);
 	}
 	
 	// --------------------------------------------------------------------------------------------------
@@ -2322,14 +2359,14 @@ public abstract class AbstractScript implements INamable
 				{
 					if (playSound)
 					{
-						playSound(player, QuestSound.ITEMSOUND_QUEST_MIDDLE);
+						playSound(player, Sound.ITEMSOUND_QUEST_MIDDLE);
 					}
 					return true;
 				}
 				
 				if (playSound)
 				{
-					playSound(player, QuestSound.ITEMSOUND_QUEST_ITEMGET);
+					playSound(player, Sound.ITEMSOUND_QUEST_ITEMGET);
 				}
 				// if there is no limit, return true every time an item is given
 				if (limit <= 0)
@@ -2396,7 +2433,7 @@ public abstract class AbstractScript implements INamable
 		boolean drop = giveItems(player, item, limit);
 		if (drop && playSound)
 		{
-			playSound(player, QuestSound.ITEMSOUND_QUEST_ITEMGET);
+			playSound(player, Sound.ITEMSOUND_QUEST_ITEMGET);
 		}
 		return drop;
 	}
@@ -2422,7 +2459,7 @@ public abstract class AbstractScript implements INamable
 		boolean drop = giveItems(player, items, limit);
 		if (drop && playSound)
 		{
-			playSound(player, QuestSound.ITEMSOUND_QUEST_ITEMGET);
+			playSound(player, Sound.ITEMSOUND_QUEST_ITEMGET);
 		}
 		return drop;
 	}
@@ -2473,7 +2510,7 @@ public abstract class AbstractScript implements INamable
 		boolean drop = giveItems(player, items, limit);
 		if (drop && playSound)
 		{
-			playSound(player, QuestSound.ITEMSOUND_QUEST_ITEMGET);
+			playSound(player, Sound.ITEMSOUND_QUEST_ITEMGET);
 		}
 		return drop;
 	}
@@ -2500,7 +2537,7 @@ public abstract class AbstractScript implements INamable
 		boolean drop = giveItems(player, item, victim, limit);
 		if (drop && playSound)
 		{
-			playSound(player, QuestSound.ITEMSOUND_QUEST_ITEMGET);
+			playSound(player, Sound.ITEMSOUND_QUEST_ITEMGET);
 		}
 		return drop;
 	}
@@ -2539,7 +2576,7 @@ public abstract class AbstractScript implements INamable
 		boolean drop = giveItems(player, item, victim, limit);
 		if (drop && playSound)
 		{
-			playSound(player, QuestSound.ITEMSOUND_QUEST_ITEMGET);
+			playSound(player, Sound.ITEMSOUND_QUEST_ITEMGET);
 		}
 		return drop;
 	}
@@ -2671,7 +2708,8 @@ public abstract class AbstractScript implements INamable
 		{
 			toDrop = new GroupedGeneralDropItem(items.getChance(), items.getDropCalculationStrategy(), items.getKillerChanceModifierStrategy(), items.getPreciseStrategy());
 			List<GeneralDropItem> dropItems = new LinkedList<>(items.getItems());
-			ITEM_LOOP: for (Iterator<GeneralDropItem> it = dropItems.iterator(); it.hasNext();)
+			ITEM_LOOP:
+			for (Iterator<GeneralDropItem> it = dropItems.iterator(); it.hasNext();)
 			{
 				GeneralDropItem item = it.next();
 				for (L2PcInstance player : players)
@@ -2741,7 +2779,8 @@ public abstract class AbstractScript implements INamable
 		{
 			rewardedCounts.put(player, new HashMap<Integer, Long>());
 		}
-		NEXT_ITEM: for (ItemHolder item : items)
+		NEXT_ITEM:
+		for (ItemHolder item : items)
 		{
 			long equaldist = item.getCount() / players.size();
 			long randomdist = item.getCount() % players.size();
@@ -2831,7 +2870,7 @@ public abstract class AbstractScript implements INamable
 			}
 			if (playSound && playPlayerSound)
 			{
-				playSound(player, QuestSound.ITEMSOUND_QUEST_ITEMGET);
+				playSound(player, Sound.ITEMSOUND_QUEST_ITEMGET);
 			}
 		}
 	}
@@ -2949,19 +2988,9 @@ public abstract class AbstractScript implements INamable
 	/**
 	 * Send a packet in order to play a sound to the player.
 	 * @param player the player whom to send the packet
-	 * @param sound the name of the sound to play
+	 * @param sound the {@link IAudio} object of the sound to play
 	 */
-	public static void playSound(L2PcInstance player, String sound)
-	{
-		player.sendPacket(QuestSound.getSound(sound));
-	}
-	
-	/**
-	 * Send a packet in order to play a sound to the player.
-	 * @param player the player whom to send the packet
-	 * @param sound the {@link QuestSound} object of the sound to play
-	 */
-	public static void playSound(L2PcInstance player, QuestSound sound)
+	public static void playSound(L2PcInstance player, IAudio sound)
 	{
 		player.sendPacket(sound.getPacket());
 	}
@@ -2974,7 +3003,7 @@ public abstract class AbstractScript implements INamable
 	 */
 	public static void addExpAndSp(L2PcInstance player, long exp, int sp)
 	{
-		player.addExpAndSp((long) player.calcStat(Stats.EXPSP_RATE, exp * Config.RATE_QUEST_REWARD_XP, null, null), (int) player.calcStat(Stats.EXPSP_RATE, sp * Config.RATE_QUEST_REWARD_SP, null, null));
+		player.addExpAndSpQuest((long) (exp * Config.RATE_QUEST_REWARD_XP), (int) (sp * Config.RATE_QUEST_REWARD_SP));
 	}
 	
 	/**
@@ -3156,34 +3185,33 @@ public abstract class AbstractScript implements INamable
 	 */
 	public void teleportPlayer(L2PcInstance player, Location loc, int instanceId, boolean allowRandomOffset)
 	{
-		loc.setInstanceId(instanceId);
-		player.teleToLocation(loc, allowRandomOffset);
+		player.teleToLocation(loc, instanceId, allowRandomOffset ? Config.MAX_OFFSET_ON_TELEPORT : 0);
 	}
 	
 	/**
 	 * Monster is running and attacking the playable.
 	 * @param npc the NPC that performs the attack
-	 * @param playable the player
+	 * @param creature the target of the attack
 	 */
-	protected void addAttackPlayerDesire(L2Npc npc, L2Playable playable)
+	protected void addAttackDesire(L2Npc npc, L2Character creature)
 	{
-		addAttackPlayerDesire(npc, playable, 999);
+		addAttackDesire(npc, creature, 999);
 	}
 	
 	/**
 	 * Monster is running and attacking the target.
 	 * @param npc the NPC that performs the attack
-	 * @param target the target of the attack
+	 * @param creature the target of the attack
 	 * @param desire the desire to perform the attack
 	 */
-	protected void addAttackPlayerDesire(L2Npc npc, L2Playable target, int desire)
+	protected void addAttackDesire(L2Npc npc, L2Character creature, long desire)
 	{
 		if (npc instanceof L2Attackable)
 		{
-			((L2Attackable) npc).addDamageHate(target, 0, desire);
+			((L2Attackable) npc).addDamageHate(creature, 0, desire);
 		}
 		npc.setIsRunning(true);
-		npc.getAI().setIntention(CtrlIntention.AI_INTENTION_ATTACK, target);
+		npc.getAI().setIntention(CtrlIntention.AI_INTENTION_ATTACK, creature);
 	}
 	
 	/**
@@ -3228,7 +3256,7 @@ public abstract class AbstractScript implements INamable
 	 * @param skill the skill to cast
 	 * @param desire the desire to cast the skill
 	 */
-	protected void addSkillCastDesire(L2Npc npc, L2Character target, SkillHolder skill, int desire)
+	protected void addSkillCastDesire(L2Npc npc, L2Character target, SkillHolder skill, long desire)
 	{
 		addSkillCastDesire(npc, target, skill.getSkill(), desire);
 	}
@@ -3240,7 +3268,7 @@ public abstract class AbstractScript implements INamable
 	 * @param skill the skill to cast
 	 * @param desire the desire to cast the skill
 	 */
-	protected void addSkillCastDesire(L2Npc npc, L2Character target, Skill skill, int desire)
+	protected void addSkillCastDesire(L2Npc npc, L2Character target, Skill skill, long desire)
 	{
 		if (npc instanceof L2Attackable)
 		{

@@ -19,8 +19,8 @@
 package com.l2jserver.gameserver.network.clientpackets;
 
 import com.l2jserver.gameserver.model.actor.instance.L2PcInstance;
-import com.l2jserver.gameserver.model.quest.Quest;
-import com.l2jserver.gameserver.model.quest.QuestState;
+import com.l2jserver.gameserver.model.events.EventDispatcher;
+import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerTutorialClientEvent;
 
 public class RequestTutorialClientEvent extends L2GameClientPacket
 {
@@ -42,12 +42,7 @@ public class RequestTutorialClientEvent extends L2GameClientPacket
 		{
 			return;
 		}
-		
-		final QuestState qs = player.getQuestState(Quest.TUTORIAL);
-		if (qs != null)
-		{
-			qs.getQuest().notifyEvent("CE" + eventId + "", null, player);
-		}
+		EventDispatcher.getInstance().notifyEventAsync(new OnPlayerTutorialClientEvent(player, eventId), player);
 	}
 	
 	@Override

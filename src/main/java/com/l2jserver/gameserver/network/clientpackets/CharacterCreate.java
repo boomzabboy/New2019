@@ -19,21 +19,17 @@
 package com.l2jserver.gameserver.network.clientpackets;
 
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.l2jserver.Config;
 import com.l2jserver.gameserver.data.sql.impl.CharNameTable;
 import com.l2jserver.gameserver.data.xml.impl.InitialEquipmentData;
 import com.l2jserver.gameserver.data.xml.impl.InitialShortcutData;
-import com.l2jserver.gameserver.data.xml.impl.PlayerTemplateData;
+import com.l2jserver.gameserver.data.xml.impl.PlayerCreationPointData;
 import com.l2jserver.gameserver.data.xml.impl.SkillTreesData;
 import com.l2jserver.gameserver.datatables.SkillData;
-import com.l2jserver.gameserver.instancemanager.QuestManager;
 import com.l2jserver.gameserver.model.L2SkillLearn;
 import com.l2jserver.gameserver.model.L2World;
 import com.l2jserver.gameserver.model.Location;
@@ -47,19 +43,18 @@ import com.l2jserver.gameserver.model.events.EventDispatcher;
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerCreate;
 import com.l2jserver.gameserver.model.items.PcItemTemplate;
 import com.l2jserver.gameserver.model.items.instance.L2ItemInstance;
-import com.l2jserver.gameserver.model.quest.Quest;
-import com.l2jserver.gameserver.model.quest.State;
 import com.l2jserver.gameserver.network.L2GameClient;
 import com.l2jserver.gameserver.network.serverpackets.CharCreateFail;
 import com.l2jserver.gameserver.network.serverpackets.CharCreateOk;
 import com.l2jserver.gameserver.network.serverpackets.CharSelectionInfo;
-import com.l2jserver.gameserver.util.Util;
 
 @SuppressWarnings("unused")
 public final class CharacterCreate extends L2GameClientPacket
 {
 	private static final String _C__0C_CHARACTERCREATE = "[C] 0C CharacterCreate";
-	protected static final Logger _logAccounting = Logger.getLogger("accounting");
+	private static final int PLAYER_NAME_MAX_LENGHT = 16;
+	
+	private static final Logger LOG = LoggerFactory.getLogger("accounting");
 	
 	// cSdddddddddddd
 	private String _name;
@@ -97,39 +92,32 @@ public final class CharacterCreate extends L2GameClientPacket
 	@Override
 	protected void runImpl()
 	{
-		// Last Verified: May 30, 2009 - Gracia Final - Players are able to create characters with names consisting of as little as 1,2,3 letter/number combinations.
 		if ((_name.length() < 1) || (_name.length() > 16))
 		{
 			if (Config.DEBUG)
 			{
-				_log.fine("Character Creation Failure: Character name " + _name + " is invalid. Message generated: Your title cannot exceed 16 characters in length. Please try again.");
+				_log.fine("Character Creation Failure: Character name " + _name + " is invalid.");
 			}
 			
 			sendPacket(new CharCreateFail(CharCreateFail.REASON_16_ENG_CHARS));
 			return;
 		}
 		
-		if (Config.FORBIDDEN_NAMES.length > 1)
+		if (Config.FORBIDDEN_NAMES.contains(_name.toLowerCase()))
 		{
-			for (String st : Config.FORBIDDEN_NAMES)
-			{
-				if (_name.toLowerCase().contains(st.toLowerCase()))
-				{
-					sendPacket(new CharCreateFail(CharCreateFail.REASON_INCORRECT_NAME));
-					return;
-				}
-			}
+			sendPacket(new CharCreateFail(CharCreateFail.REASON_INCORRECT_NAME));
+			return;
 		}
 		
-		// Last Verified: May 30, 2009 - Gracia Final
-		if (!Util.isAlphaNumeric(_name) || !isValidName(_name))
+		if (!isValidName(_name))
 		{
-			if (Config.DEBUG)
-			{
-				_log.fine("Character Creation Failure: Character name " + _name + " is invalid. Message generated: Incorrect name. Please try again.");
-			}
-			
 			sendPacket(new CharCreateFail(CharCreateFail.REASON_INCORRECT_NAME));
+			return;
+		}
+		
+		if (_name.isEmpty() || (_name.length() > PLAYER_NAME_MAX_LENGHT))
+		{
+			sendPacket(new CharCreateFail(CharCreateFail.REASON_16_ENG_CHARS));
 			return;
 		}
 		
@@ -158,7 +146,6 @@ public final class CharacterCreate extends L2GameClientPacket
 		}
 		
 		L2PcInstance newChar = null;
-		L2PcTemplate template = null;
 		
 		/*
 		 * DrHouse: Since checks for duplicate names are done using SQL, lock must be held until data is written to DB as well.
@@ -186,19 +173,15 @@ public final class CharacterCreate extends L2GameClientPacket
 				return;
 			}
 			
-			template = PlayerTemplateData.getInstance().getTemplate(_classId);
-			if ((template == null) || (ClassId.getClassId(_classId).level() > 0))
+			if (ClassId.getClassId(_classId).level() > 0)
 			{
-				if (Config.DEBUG)
-				{
-					_log.fine("Character Creation Failure: " + _name + " classId: " + _classId + " Template: " + template + " Message generated: Your character creation has failed.");
-				}
+				_log.warning("Character Creation Failure: " + _name + " classId: " + _classId);
 				
 				sendPacket(new CharCreateFail(CharCreateFail.REASON_CREATION_FAILED));
 				return;
 			}
 			final PcAppearance app = new PcAppearance(_face, _hairColor, _hairStyle, _sex != 0);
-			newChar = L2PcInstance.create(template, getClient().getAccountName(), _name, app);
+			newChar = L2PcInstance.create(_classId, getClient().getAccountName(), _name, app);
 		}
 		
 		// HP and MP are at maximum and CP is zero by default.
@@ -210,36 +193,12 @@ public final class CharacterCreate extends L2GameClientPacket
 		
 		initNewChar(getClient(), newChar);
 		
-		LogRecord record = new LogRecord(Level.INFO, "Created new character");
-		record.setParameters(new Object[]
-		{
-			newChar,
-			getClient()
-		});
-		_logAccounting.log(record);
+		LOG.info("Created new character {} {}.", newChar, getClient());
 	}
 	
 	private boolean isValidName(String text)
 	{
-		boolean result = true;
-		String test = text;
-		Pattern pattern;
-		// UnAfraid: TODO: Move that into Config
-		try
-		{
-			pattern = Pattern.compile(Config.CNAME_TEMPLATE);
-		}
-		catch (PatternSyntaxException e) // case of illegal pattern
-		{
-			_log.warning("ERROR : Character name pattern of config is wrong!");
-			pattern = Pattern.compile(".*");
-		}
-		Matcher regexp = pattern.matcher(test);
-		if (!regexp.matches())
-		{
-			result = false;
-		}
-		return result;
+		return Config.PLAYER_NAME_TEMPLATE.matcher(text).matches();
 	}
 	
 	private void initNewChar(L2GameClient client, L2PcInstance newChar)
@@ -257,7 +216,7 @@ public final class CharacterCreate extends L2GameClientPacket
 		}
 		
 		final L2PcTemplate template = newChar.getTemplate();
-		Location createLoc = template.getCreationPoint();
+		Location createLoc = PlayerCreationPointData.getInstance().getCreationPoint(template.getClassId());
 		newChar.setXYZInvisible(createLoc.getX(), createLoc.getY(), createLoc.getZ());
 		newChar.setTitle("");
 		
@@ -267,11 +226,11 @@ public final class CharacterCreate extends L2GameClientPacket
 		}
 		if (Config.STARTING_LEVEL > 1)
 		{
-			newChar.getStat().addLevel((byte) (Config.STARTING_LEVEL - 1));
+			newChar.addLevel(Config.STARTING_LEVEL - 1);
 		}
 		if (Config.STARTING_SP > 0)
 		{
-			newChar.getStat().addSp(Config.STARTING_SP);
+			newChar.addSp(Config.STARTING_SP);
 		}
 		
 		final List<PcItemTemplate> initialItems = InitialEquipmentData.getInstance().getEquipmentList(newChar.getClassId());
@@ -306,11 +265,6 @@ public final class CharacterCreate extends L2GameClientPacket
 		// Register all shortcuts for actions, skills and items for this new character.
 		InitialShortcutData.getInstance().registerAllShortcuts(newChar);
 		
-		if (!Config.DISABLE_TUTORIAL)
-		{
-			startTutorialQuest(newChar);
-		}
-		
 		EventDispatcher.getInstance().notifyEvent(new OnPlayerCreate(newChar, newChar.getObjectId(), newChar.getName(), client), Containers.Players());
 		
 		newChar.setOnlineStatus(true, false);
@@ -323,23 +277,6 @@ public final class CharacterCreate extends L2GameClientPacket
 		{
 			_log.fine("Character init end");
 		}
-	}
-	
-	/**
-	 * TODO: Unhardcode it using the new listeners.
-	 * @param player
-	 */
-	public void startTutorialQuest(L2PcInstance player)
-	{
-		if (player.getQuestState(Quest.TUTORIAL) == null)
-		{
-			final Quest q = QuestManager.getInstance().getQuest(Quest.TUTORIAL);
-			if (q != null)
-			{
-				q.newQuestState(player).setState(State.STARTED);
-			}
-		}
-		
 	}
 	
 	@Override

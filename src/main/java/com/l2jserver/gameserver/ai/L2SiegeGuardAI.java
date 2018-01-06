@@ -179,7 +179,7 @@ public class L2SiegeGuardAI extends L2CharacterAI implements Runnable
 	@Override
 	synchronized void changeIntention(CtrlIntention intention, Object arg0, Object arg1)
 	{
-		_log.debug("{}: changeIntention({}, {}, {})", getClass().getSimpleName(), intention, arg0, arg1);
+		LOG.debug("{}: changeIntention({}, {}, {})", getClass().getSimpleName(), intention, arg0, arg1);
 		
 		if (intention == AI_INTENTION_IDLE /* || intention == AI_INTENTION_ACTIVE */) // active becomes idle if only a summon is present
 		{
@@ -282,7 +282,7 @@ public class L2SiegeGuardAI extends L2CharacterAI implements Runnable
 				if (autoAttackCondition(target)) // check aggression
 				{
 					// Get the hate level of the L2Attackable against this L2Character target contained in _aggroList
-					int hating = npc.getHating(target);
+					long hating = npc.getHating(target);
 					
 					// Add the attacker to the L2Attackable _aggroList with 0 damage and 1 hate
 					if (hating == 0)
@@ -308,7 +308,7 @@ public class L2SiegeGuardAI extends L2CharacterAI implements Runnable
 			if (hated != null)
 			{
 				// Get the hate level of the L2Attackable against this L2Character target contained in _aggroList
-				int aggro = npc.getHating(hated);
+				long aggro = npc.getHating(hated);
 				
 				if ((aggro + _globalAggro) > 0)
 				{
@@ -343,7 +343,7 @@ public class L2SiegeGuardAI extends L2CharacterAI implements Runnable
 	 */
 	private void thinkAttack()
 	{
-		_log.debug("{}: thinkAttack(); timeout={}", getClass().getSimpleName(), (_attackTimeout - GameTimeController.getInstance().getGameTicks()));
+		LOG.debug("{}: thinkAttack(); timeout={}", getClass().getSimpleName(), (_attackTimeout - GameTimeController.getInstance().getGameTicks()));
 		
 		if (_attackTimeout < GameTimeController.getInstance().getGameTicks())
 		{
@@ -416,7 +416,7 @@ public class L2SiegeGuardAI extends L2CharacterAI implements Runnable
 					{
 						for (Skill sk : _selfAnalysis.healSkills)
 						{
-							if (_actor.getCurrentMp() < sk.getMpConsume())
+							if (_actor.getCurrentMp() < sk.getMpConsume2())
 							{
 								continue;
 							}
@@ -475,7 +475,7 @@ public class L2SiegeGuardAI extends L2CharacterAI implements Runnable
 				{
 					for (Skill sk : _selfAnalysis.healSkills)
 					{
-						if (_actor.getCurrentMp() < sk.getMpConsume())
+						if (_actor.getCurrentMp() < sk.getMpConsume2())
 						{
 							continue;
 						}
@@ -568,7 +568,7 @@ public class L2SiegeGuardAI extends L2CharacterAI implements Runnable
 			{
 				int castRange = sk.getCastRange();
 				
-				if ((dist_2 <= (castRange * castRange)) && (castRange > 70) && !_actor.isSkillDisabled(sk) && (_actor.getCurrentMp() >= _actor.getStat().getMpConsume(sk)) && !sk.isPassive())
+				if ((dist_2 <= (castRange * castRange)) && (castRange > 70) && !_actor.isSkillDisabled(sk) && (_actor.getCurrentMp() >= _actor.getStat().getMpConsume2(sk)) && !sk.isPassive())
 				{
 					
 					L2Object OldTarget = _actor.getTarget();
@@ -710,7 +710,7 @@ public class L2SiegeGuardAI extends L2CharacterAI implements Runnable
 				{
 					int castRange = sk.getCastRange();
 					
-					if (((castRange * castRange) >= dist_2) && !sk.isPassive() && (_actor.getCurrentMp() >= _actor.getStat().getMpConsume(sk)) && !_actor.isSkillDisabled(sk))
+					if (((castRange * castRange) >= dist_2) && !sk.isPassive() && (_actor.getCurrentMp() >= _actor.getStat().getMpConsume2(sk)) && !_actor.isSkillDisabled(sk))
 					{
 						L2Object OldTarget = _actor.getTarget();
 						if ((sk.isContinuous() && !sk.isDebuff()) || (sk.hasEffectType(L2EffectType.HEAL)))
@@ -835,7 +835,7 @@ public class L2SiegeGuardAI extends L2CharacterAI implements Runnable
 	 * @param aggro The value of hate to add to the actor against the target
 	 */
 	@Override
-	protected void onEvtAggression(L2Character target, int aggro)
+	protected void onEvtAggression(L2Character target, long aggro)
 	{
 		if (_actor == null)
 		{
