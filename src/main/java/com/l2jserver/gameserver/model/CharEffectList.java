@@ -278,7 +278,7 @@ public final class CharEffectList
 		{
 			effects = getDebuffs();
 		}
-		else if (skill.isTriggeredSkill())
+		else if (skill.isTrigger())
 		{
 			effects = getTriggered();
 		}
@@ -1247,7 +1247,7 @@ public final class CharEffectList
 		}
 		
 		// Prevent adding and initializing buffs/effects on dead creatures.
-		if (info.getEffected().isDead())
+		if (info.getEffected().isDead() && (info.getEffector() != info.getEffector()))
 		{
 			return;
 		}
@@ -1328,7 +1328,7 @@ public final class CharEffectList
 			{
 				buffsToRemove = getDanceCount() - Config.DANCES_MAX_AMOUNT;
 			}
-			else if (skill.isTriggeredSkill())
+			else if (skill.isTrigger())
 			{
 				buffsToRemove = getTriggeredBuffCount() - Config.TRIGGERED_BUFFS_MAX_AMOUNT;
 			}
@@ -1488,12 +1488,8 @@ public final class CharEffectList
 					if (summonOwner.isInParty())
 					{
 						summonOwner.getParty().broadcastToPartyMembers(summonOwner, psSummon); // send to all member except summonOwner
-						summonOwner.sendPacket(ps); // now send to summonOwner
 					}
-					else
-					{
-						summonOwner.sendPacket(ps);
-					}
+					summonOwner.sendPacket(ps);
 				}
 			}
 			else if (_owner.isPlayer() && _owner.isInParty())

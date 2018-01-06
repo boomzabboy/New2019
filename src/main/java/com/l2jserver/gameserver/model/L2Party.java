@@ -20,12 +20,16 @@ package com.l2jserver.gameserver.model;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,7 +48,6 @@ import com.l2jserver.gameserver.model.entity.DimensionalRift;
 import com.l2jserver.gameserver.model.holders.ItemHolder;
 import com.l2jserver.gameserver.model.itemcontainer.Inventory;
 import com.l2jserver.gameserver.model.items.instance.L2ItemInstance;
-import com.l2jserver.gameserver.model.stats.Stats;
 import com.l2jserver.gameserver.network.SystemMessageId;
 import com.l2jserver.gameserver.network.serverpackets.ExAskModifyPartyLooting;
 import com.l2jserver.gameserver.network.serverpackets.ExCloseMPCC;
@@ -367,7 +370,7 @@ public class L2Party extends AbstractPlayerGroup
 					_positionPacket.reuse(this);
 				}
 				broadcastPacket(_positionPacket);
-			} , PARTY_POSITION_BROADCAST_INTERVAL.toMillis() / 2, PARTY_POSITION_BROADCAST_INTERVAL.toMillis());
+			}, PARTY_POSITION_BROADCAST_INTERVAL.toMillis() / 2, PARTY_POSITION_BROADCAST_INTERVAL.toMillis());
 		}
 	}
 	
@@ -683,32 +686,53 @@ public class L2Party extends AbstractPlayerGroup
 	}
 	
 	/**
-	 * distribute adena to party members
-	 * @param player
-	 * @param adena
-	 * @param target
+	 * Distribute adena to party members. <BR>
+	 * Check the number of party members that must be rewarded <BR>
+	 * (The party member must be in range to receive its reward)<BR>
+	 * @param player owner (picker)
+	 * @param adena the amount of adena to split
+	 * @param target the target who drop / pick the adena
 	 */
 	public void distributeAdena(L2PcInstance player, long adena, L2Character target)
 	{
-		// Check the number of party members that must be rewarded
-		// (The party member must be in range to receive its reward)
-		final List<L2PcInstance> toReward = new LinkedList<>();
-		for (L2PcInstance member : getMembers())
+		final Map<L2PcInstance, AtomicLong> toReward = new HashMap<>(9);
+		
+		for (final L2PcInstance member : getMembers())
 		{
 			if (Util.checkIfInRange(Config.ALT_PARTY_RANGE2, target, member, true))
 			{
-				toReward.add(member);
+				toReward.put(member, new AtomicLong());
 			}
 		}
-		
 		if (!toReward.isEmpty())
 		{
-			// Now we can actually distribute the adena reward
-			// (Total adena splitted by the number of party members that are in range and must be rewarded)
-			long count = adena / toReward.size();
-			for (L2PcInstance member : toReward)
+			long leftOver = adena % toReward.size();
+			final long count = adena / toReward.size();
+			
+			if (count > 0)
 			{
-				member.addAdena("Party", count, player, true);
+				for (AtomicLong member : toReward.values())
+				{
+					member.addAndGet(count);
+				}
+			}
+			
+			if (leftOver > 0)
+			{
+				List<L2PcInstance> keys = new ArrayList<>(toReward.keySet());
+				
+				while (leftOver-- > 0)
+				{
+					Collections.shuffle(keys);
+					toReward.get(keys.get(0)).incrementAndGet();
+				}
+			}
+			for (Entry<L2PcInstance, AtomicLong> member : toReward.entrySet())
+			{
+				if (member.getValue().get() > 0)
+				{
+					member.getKey().addAdena("Party", member.getValue().get(), player, true);
+				}
 			}
 		}
 	}
@@ -760,8 +784,8 @@ public class L2Party extends AbstractPlayerGroup
 				final double preCalculation = (sqLevel / sqLevelSum) * penalty;
 				
 				// Add the XP/SP points to the requested party member
-				long addexp = Math.round(member.calcStat(Stats.EXPSP_RATE, xpReward * preCalculation, null, null));
-				int addsp = (int) member.calcStat(Stats.EXPSP_RATE, spReward * preCalculation, null, null);
+				long addexp = Math.round(xpReward * preCalculation);
+				int addsp = (int) (spReward * preCalculation);
 				
 				addexp = calculateExpSpPartyCutoff(member.getActingPlayer(), topLvl, addexp, addsp, useVitalityRate);
 				if (addexp > 0)

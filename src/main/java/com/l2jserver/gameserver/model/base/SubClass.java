@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2017 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -19,43 +19,26 @@
 package com.l2jserver.gameserver.model.base;
 
 import com.l2jserver.Config;
-import com.l2jserver.gameserver.data.xml.impl.ExperienceData;
+import com.l2jserver.gameserver.data.json.ExperienceData;
+import com.l2jserver.gameserver.model.actor.instance.L2PcInstance;
+import com.l2jserver.gameserver.model.actor.stat.PcStat;
 
 /**
  * Character Sub-Class Definition <BR>
  * Used to store key information about a character's sub-class.
- * @author Tempy
+ * @author Zealar
  */
 public final class SubClass
 {
-	private static final byte _maxLevel = Config.MAX_SUBCLASS_LEVEL < ExperienceData.getInstance().getMaxLevel() ? Config.MAX_SUBCLASS_LEVEL : (byte) (ExperienceData.getInstance().getMaxLevel() - 1);
-	
 	private PlayerClass _class;
-	private long _exp = ExperienceData.getInstance().getExpForLevel(Config.BASE_SUBCLASS_LEVEL);
-	private int _sp = 0;
-	private byte _level = Config.BASE_SUBCLASS_LEVEL;
 	private int _classIndex = 1;
+	private final PcStat _stats;
 	
-	public SubClass(int classId, long exp, int sp, byte level, int classIndex)
+	public SubClass(L2PcInstance activeChar)
 	{
-		_class = PlayerClass.values()[classId];
-		_exp = exp;
-		_sp = sp;
-		_level = level;
-		_classIndex = classIndex;
-	}
-	
-	public SubClass(int classId, int classIndex)
-	{
-		// Used for defining a sub class using default values for XP, SP and player level.
-		_class = PlayerClass.values()[classId];
-		_classIndex = classIndex;
-	}
-	
-	public SubClass()
-	{
-		// Used for specifying ALL attributes of a sub class directly,
-		// using the preset default values.
+		_stats = new PcStat(activeChar);
+		_stats.setExp(ExperienceData.getInstance().getExpForLevel(Config.BASE_SUBCLASS_LEVEL));
+		_stats.setLevel(Config.BASE_SUBCLASS_LEVEL);
 	}
 	
 	public PlayerClass getClassDefinition()
@@ -63,24 +46,9 @@ public final class SubClass
 		return _class;
 	}
 	
-	public int getClassId()
+	public void setClassIndex(int classIndex)
 	{
-		return _class.ordinal();
-	}
-	
-	public long getExp()
-	{
-		return _exp;
-	}
-	
-	public int getSp()
-	{
-		return _sp;
-	}
-	
-	public byte getLevel()
-	{
-		return _level;
+		_classIndex = classIndex;
 	}
 	
 	/**
@@ -97,59 +65,48 @@ public final class SubClass
 		_class = PlayerClass.values()[classId];
 	}
 	
-	public void setExp(long expValue)
+	public int getClassId()
 	{
-		if (expValue > (ExperienceData.getInstance().getExpForLevel(_maxLevel + 1) - 1))
-		{
-			expValue = ExperienceData.getInstance().getExpForLevel(_maxLevel + 1) - 1;
-		}
-		
-		_exp = expValue;
+		return _class.ordinal();
 	}
 	
-	public void setSp(int spValue)
+	public long getExp()
 	{
-		_sp = spValue;
+		return _stats.getExp();
 	}
 	
-	public void setClassIndex(int classIndex)
+	public int getLevel()
 	{
-		_classIndex = classIndex;
+		return _stats.getLevel();
 	}
 	
-	public void setLevel(byte levelValue)
+	public int getSp()
 	{
-		if (levelValue > _maxLevel)
-		{
-			levelValue = _maxLevel;
-		}
-		else if (levelValue < Config.BASE_SUBCLASS_LEVEL)
-		{
-			levelValue = Config.BASE_SUBCLASS_LEVEL;
-		}
-		
-		_level = levelValue;
+		return _stats.getSp();
 	}
 	
-	public void incLevel()
+	public void setSp(int sp)
 	{
-		if (getLevel() == _maxLevel)
-		{
-			return;
-		}
-		
-		_level++;
-		setExp(ExperienceData.getInstance().getExpForLevel(getLevel()));
+		_stats.setSp(sp);
 	}
 	
-	public void decLevel()
+	public void setExp(long exp)
 	{
-		if (getLevel() == Config.BASE_SUBCLASS_LEVEL)
-		{
-			return;
-		}
-		
-		_level--;
-		setExp(ExperienceData.getInstance().getExpForLevel(getLevel()));
+		_stats.setExp(exp);
+	}
+	
+	public void setLevel(int level)
+	{
+		_stats.setLevel(level);
+	}
+	
+	public void addExp(long exp)
+	{
+		_stats.addExp(exp);
+	}
+	
+	public PcStat getStat()
+	{
+		return _stats;
 	}
 }

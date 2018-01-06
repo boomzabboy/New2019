@@ -33,14 +33,16 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Useful utilities common to L2J Server.
  */
 public final class Util
 {
-	private static final Logger _log = Logger.getLogger(Util.class.getName());
+	private static final Logger LOG = LoggerFactory.getLogger(Util.class);
 	
 	private static final char[] ILLEGAL_CHARACTERS =
 	{
@@ -76,7 +78,7 @@ public final class Util
 		}
 		catch (UnknownHostException e)
 		{
-			_log.warning("Util: " + e.getMessage());
+			LOG.warn("Invalid host!", e);
 		}
 		return false;
 	}
@@ -236,5 +238,36 @@ public final class Util
 	public static <K, V> Function<K, V> mapToFunction(Map<K, V> map)
 	{
 		return key -> map.get(key);
+	}
+	
+	/**
+	 * Parses a given argument.
+	 * @param args the Java program arguments
+	 * @param arg the argument to parse
+	 * @param hasArgValue if {@code true} will look for the argument value
+	 * @return the argument if hasArgValue is {@code false}, the argument value if hasArgValue is {@code true}, null if the argument is not present
+	 */
+	public static String parseArg(String[] args, String arg, boolean hasArgValue)
+	{
+		if ((args == null) || (arg == null) || arg.isEmpty())
+		{
+			return null;
+		}
+		
+		try
+		{
+			for (int i = 0; i < args.length; i++)
+			{
+				if (arg.equals(args[i]))
+				{
+					return hasArgValue ? args[i + 1] : arg;
+				}
+			}
+			return null;
+		}
+		catch (Exception ex)
+		{
+			throw new IllegalArgumentException("Illegal arguments " + Arrays.toString(args) + " and argument " + arg + "!", ex);
+		}
 	}
 }

@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
@@ -33,12 +32,14 @@ import com.l2jserver.gameserver.ai.CtrlIntention;
 import com.l2jserver.gameserver.enums.DuelResult;
 import com.l2jserver.gameserver.enums.DuelState;
 import com.l2jserver.gameserver.enums.Team;
+import com.l2jserver.gameserver.enums.audio.Music;
 import com.l2jserver.gameserver.instancemanager.DuelManager;
 import com.l2jserver.gameserver.instancemanager.InstanceManager;
 import com.l2jserver.gameserver.model.Location;
+import com.l2jserver.gameserver.model.actor.L2Summon;
 import com.l2jserver.gameserver.model.actor.instance.L2DoorInstance;
 import com.l2jserver.gameserver.model.actor.instance.L2PcInstance;
-import com.l2jserver.gameserver.model.skills.Skill;
+import com.l2jserver.gameserver.model.skills.BuffInfo;
 import com.l2jserver.gameserver.model.zone.ZoneId;
 import com.l2jserver.gameserver.network.SystemMessageId;
 import com.l2jserver.gameserver.network.serverpackets.ActionFailed;
@@ -58,7 +59,7 @@ public class Duel
 {
 	protected static final Logger LOG = LoggerFactory.getLogger(Duel.class);
 	
-	private static final PlaySound B04_S01 = new PlaySound(1, "B04_S01", 0, 0, 0, 0, 0);
+	private static final PlaySound B04_S01 = Music.B04_S01.getPacket();
 	
 	private static final int PARTY_DUEL_DURATION = 300;
 	private static final int PARTY_DUEL_PREPARE_TIME = 30;
@@ -120,31 +121,35 @@ public class Duel
 	
 	public static class PlayerCondition
 	{
-		private L2PcInstance _player;
-		private double _hp;
-		private double _mp;
-		private double _cp;
-		private boolean _paDuel;
-		private int _x, _y, _z;
-		private Set<Skill> _debuffs;
+		private final L2PcInstance _player;
+		private L2Summon _summon;
+		private final double _hp;
+		private final double _mp;
+		private final double _cp;
+		private final boolean _paDuel;
+		private Location _loc;
+		private final List<BuffInfo> _playerEffects;
+		private List<BuffInfo> _petEffects;
 		
 		public PlayerCondition(L2PcInstance player, boolean partyDuel)
 		{
-			if (player == null)
-			{
-				return;
-			}
 			_player = player;
 			_hp = _player.getCurrentHp();
 			_mp = _player.getCurrentMp();
 			_cp = _player.getCurrentCp();
 			_paDuel = partyDuel;
 			
+			_playerEffects = new ArrayList<>(player.getEffectList().getEffects());
+			
 			if (_paDuel)
 			{
-				_x = _player.getX();
-				_y = _player.getY();
-				_z = _player.getZ();
+				_loc = _player.getLocation();
+			}
+			
+			if (player.hasSummon())
+			{
+				_summon = player.getSummon();
+				_petEffects = new ArrayList<>(player.getSummon().getEffectList().getEffects());
 			}
 		}
 		
@@ -166,32 +171,33 @@ public class Duel
 			{
 				teleportBack();
 			}
-			
-			if (_debuffs != null) // Debuff removal
+			_player.getEffectList().stopAllEffects();
+			for (BuffInfo skill : _playerEffects)
 			{
-				for (Skill skill : _debuffs)
+				if ((skill != null) && (skill.getTime() > 0))
 				{
-					if (skill != null)
+					skill.getSkill().applyEffects(_player, _player, true, skill.getTime());
+				}
+			}
+			if (_player.hasSummon())
+			{
+				_player.getSummon().getEffectList().stopAllEffects();
+				if ((_summon != null) && (_summon == _player.getSummon()))
+				{
+					for (BuffInfo skill : _petEffects)
 					{
-						_player.stopSkillEffects(true, skill.getId());
+						if ((skill != null) && (skill.getTime() > 0))
+						{
+							skill.getSkill().applyEffects(_summon, _summon, true, skill.getTime());
+						}
 					}
 				}
 			}
 		}
 		
-		public void registerDebuff(Skill debuff)
-		{
-			if (_debuffs == null)
-			{
-				_debuffs = ConcurrentHashMap.newKeySet();
-			}
-			
-			_debuffs.add(debuff);
-		}
-		
 		public void teleportBack()
 		{
-			_player.teleToLocation(_x, _y, _z);
+			_player.teleToLocation(_loc);
 		}
 		
 		public L2PcInstance getPlayer()
@@ -360,7 +366,7 @@ public class Duel
 		ThreadPoolManager.getInstance().scheduleGeneral(() ->
 		{
 			_playerConditions.values().forEach(c -> c.restoreCondition());
-		} , _partyDuel ? PARTY_DUEL_TELEPORT_BACK_TIME : 1000);
+		}, _partyDuel ? PARTY_DUEL_TELEPORT_BACK_TIME : 1000);
 		
 		ThreadPoolManager.getInstance().scheduleGeneral(() -> clear(), _partyDuel ? PARTY_DUEL_TELEPORT_BACK_TIME : 1000);
 	}
@@ -619,6 +625,7 @@ public class Duel
 				{
 					sm = SystemMessage.getSystemMessage(SystemMessageId.C1_HAS_WON_THE_DUEL);
 				}
+				sm.addString(_leaderB.getName());
 				break;
 			case CANCELED:
 			case TIMEOUT:
@@ -787,15 +794,6 @@ public class Duel
 			{
 				_leaderA.setDuelState(DuelState.WINNER);
 			}
-		}
-	}
-	
-	public void onBuff(L2PcInstance player, Skill debuff)
-	{
-		final PlayerCondition cond = _playerConditions.get(player.getObjectId());
-		if (cond != null)
-		{
-			cond.registerDebuff(debuff);
 		}
 	}
 }

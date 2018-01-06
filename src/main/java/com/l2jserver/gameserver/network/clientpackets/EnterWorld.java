@@ -45,7 +45,6 @@ import com.l2jserver.gameserver.model.L2Object;
 import com.l2jserver.gameserver.model.L2World;
 import com.l2jserver.gameserver.model.PcCondOverride;
 import com.l2jserver.gameserver.model.TeleportWhereType;
-import com.l2jserver.gameserver.model.actor.instance.L2ClassMasterInstance;
 import com.l2jserver.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jserver.gameserver.model.entity.Couple;
 import com.l2jserver.gameserver.model.entity.Fort;
@@ -57,7 +56,6 @@ import com.l2jserver.gameserver.model.entity.clanhall.AuctionableHall;
 import com.l2jserver.gameserver.model.entity.clanhall.SiegableHall;
 import com.l2jserver.gameserver.model.items.instance.L2ItemInstance;
 import com.l2jserver.gameserver.model.quest.Quest;
-import com.l2jserver.gameserver.model.quest.QuestState;
 import com.l2jserver.gameserver.model.skills.CommonSkill;
 import com.l2jserver.gameserver.model.zone.ZoneId;
 import com.l2jserver.gameserver.network.SystemMessageId;
@@ -374,15 +372,13 @@ public class EnterWorld extends L2GameClientPacket
 		// Send Skill list
 		activeChar.sendSkillList();
 		
+		// Apply Dye
+		activeChar.recalcHennaStats();
+		
 		// Send Dye Information
 		activeChar.sendPacket(new HennaInfo(activeChar));
 		
 		Quest.playerEnter(activeChar);
-		
-		if (!Config.DISABLE_TUTORIAL)
-		{
-			loadTutorial(activeChar);
-		}
 		
 		activeChar.sendPacket(new QuestList());
 		
@@ -423,12 +419,16 @@ public class EnterWorld extends L2GameClientPacket
 		
 		final SystemMessage sm = SystemMessage.getSystemMessage(SystemMessageId.FRIEND_S1_HAS_LOGGED_IN);
 		sm.addCharName(activeChar);
-		for (int id : activeChar.getFriendList())
+		
+		if (activeChar.hasFriends())
 		{
-			final L2Object obj = L2World.getInstance().findObject(id);
-			if (obj != null)
+			for (int id : activeChar.getFriends())
 			{
-				obj.sendPacket(sm);
+				final L2Object obj = L2World.getInstance().findObject(id);
+				if (obj != null)
+				{
+					obj.sendPacket(sm);
+				}
 			}
 		}
 		
@@ -548,8 +548,6 @@ public class EnterWorld extends L2GameClientPacket
 			activeChar.sendPacket(new ExShowScreenMessage(Config.WELCOME_MESSAGE_TEXT, Config.WELCOME_MESSAGE_TIME));
 		}
 		
-		L2ClassMasterInstance.showQuestionMark(activeChar);
-		
 		final int birthday = activeChar.checkBirthDay();
 		if (birthday == 0)
 		{
@@ -662,15 +660,6 @@ public class EnterWorld extends L2GameClientPacket
 	private String getText(String string)
 	{
 		return new String(Base64.getDecoder().decode(string));
-	}
-	
-	private static void loadTutorial(L2PcInstance player)
-	{
-		final QuestState qs = player.getQuestState(Quest.TUTORIAL);
-		if (qs != null)
-		{
-			qs.getQuest().notifyEvent("UC", null, player);
-		}
 	}
 	
 	@Override

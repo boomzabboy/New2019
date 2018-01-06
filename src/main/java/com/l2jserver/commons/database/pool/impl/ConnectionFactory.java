@@ -30,6 +30,11 @@ import com.l2jserver.commons.database.pool.IConnectionFactory;
  */
 public class ConnectionFactory
 {
+	private ConnectionFactory()
+	{
+		// Hide constructor.
+	}
+	
 	public static IConnectionFactory getInstance()
 	{
 		return SingletonHolder.INSTANCE;
@@ -48,17 +53,17 @@ public class ConnectionFactory
 				default:
 				case "HikariCP":
 				{
-					INSTANCE = new HikariCPConnectionFactory();
+					INSTANCE = HikariCPConnectionFactory.INSTANCE;
 					break;
 				}
 				case "C3P0":
 				{
-					INSTANCE = new C3P0ConnectionFactory();
+					INSTANCE = C3P0ConnectionFactory.INSTANCE;
 					break;
 				}
 				case "BoneCP":
 				{
-					INSTANCE = new BoneCPConnectionFactory();
+					INSTANCE = BoneCPConnectionFactory.INSTANCE;
 					break;
 				}
 			}

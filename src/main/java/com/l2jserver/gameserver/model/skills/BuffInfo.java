@@ -67,6 +67,8 @@ public final class BuffInfo
 	/** If {@code true} then this effect is in use (or has been stop because an Herb took place). */
 	private boolean _isInUse = true;
 	
+	private int _charges = 0;
+	
 	/**
 	 * Buff Info constructor.
 	 * @param effector
@@ -263,13 +265,6 @@ public final class BuffInfo
 			_effected.sendPacket(sm);
 		}
 		
-		// Creates a task that will stop all the effects.
-		if (_abnormalTime > 0)
-		{
-			_scheduledFutureTimeTask = ThreadPoolManager.getInstance().scheduleEffectAtFixedRate(new BuffTimeTask(this), 0, 1000L);
-		}
-		
-		boolean update = false;
 		for (AbstractEffect effect : _effects)
 		{
 			if (effect.isInstant() || (_effected.isDead() && !_skill.isPassive()))
@@ -292,14 +287,14 @@ public final class BuffInfo
 			
 			// Add stats.
 			_effected.addStatFuncs(effect.getStatFuncs(_effector, _effected, _skill));
-			
-			update = true;
 		}
 		
-		if (update)
+		addAbnormalVisualEffects();
+		
+		// Creates a task that will stop all the effects
+		if (_abnormalTime > 0)
 		{
-			// Add abnormal visual effects.
-			addAbnormalVisualEffects();
+			_scheduledFutureTimeTask = ThreadPoolManager.getInstance().scheduleEffectAtFixedRate(new BuffTimeTask(this), 0, 1000L);
 		}
 	}
 	
@@ -473,9 +468,26 @@ public final class BuffInfo
 		return 0;
 	}
 	
+	/**
+	 * @return the loaded charges
+	 */
+	public int getCharges()
+	{
+		return _charges;
+	}
+	
+	/**
+	 * @param set loaded charges
+	 */
+	public void setCharges(int charges)
+	{
+		_charges = charges;
+	}
+	
 	@Override
 	public String toString()
 	{
-		return "BuffInfo [effector=" + _effector + ", effected=" + _effected + ", skill=" + _skill + ", effects=" + _effects + ", tasks=" + _tasks + ", scheduledFutureTimeTask=" + _scheduledFutureTimeTask + ", abnormalTime=" + _abnormalTime + ", periodStartTicks=" + _periodStartTicks + ", isRemoved=" + _isRemoved + ", isInUse=" + _isInUse + "]";
+		return "BuffInfo [effector=" + _effector + ", effected=" + _effected + ", skill=" + _skill + ", effects=" + _effects + ", tasks=" + _tasks + ", scheduledFutureTimeTask=" + _scheduledFutureTimeTask + ", abnormalTime=" + _abnormalTime + ", periodStartTicks=" + _periodStartTicks
+			+ ", isRemoved=" + _isRemoved + ", isInUse=" + _isInUse + "]";
 	}
 }
