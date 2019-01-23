@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -34,8 +34,8 @@ public class StaticObjStat extends CharStat
 	}
 	
 	@Override
-	public final byte getLevel()
+	public final int getLevel()
 	{
-		return (byte) getActiveChar().getLevel();
+		return getActiveChar().getLevel();
 	}
 }

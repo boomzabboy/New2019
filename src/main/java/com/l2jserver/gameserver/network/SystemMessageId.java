@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -6158,25 +6158,25 @@ public final class SystemMessageId
 	 * ID: 1066<br>
 	 * Message: $s1 HP has been restored.
 	 */
-	public static final SystemMessageId S1_HP_RESTORED = new SystemMessageId(1066);
+	public static final SystemMessageId S1_HP_HAS_BEEN_RESTORED = new SystemMessageId(1066);
 	
 	/**
 	 * ID: 1067<br>
 	 * Message: $s2 HP has been restored by $c1.
 	 */
-	public static final SystemMessageId S2_HP_RESTORED_BY_C1 = new SystemMessageId(1067);
+	public static final SystemMessageId S2_HP_HAS_BEEN_RESTORED_BY_C1 = new SystemMessageId(1067);
 	
 	/**
 	 * ID: 1068<br>
 	 * Message: $s1 MP has been restored.
 	 */
-	public static final SystemMessageId S1_MP_RESTORED = new SystemMessageId(1068);
+	public static final SystemMessageId S1_MP_HAS_BEEN_RESTORED = new SystemMessageId(1068);
 	
 	/**
 	 * ID: 1069<br>
 	 * Message: $s2 MP has been restored by $c1.
 	 */
-	public static final SystemMessageId S2_MP_RESTORED_BY_C1 = new SystemMessageId(1069);
+	public static final SystemMessageId S2_MP_HAS_BEEN_RESTORED_BY_C1 = new SystemMessageId(1069);
 	
 	/**
 	 * ID: 1070<br>
@@ -8194,13 +8194,13 @@ public final class SystemMessageId
 	 * ID: 1405<br>
 	 * Message: $s1 CP has been restored.
 	 */
-	public static final SystemMessageId S1_CP_WILL_BE_RESTORED = new SystemMessageId(1405);
+	public static final SystemMessageId S1_CP_HAS_BEEN_RESTORED = new SystemMessageId(1405);
 	
 	/**
 	 * ID: 1406<br>
 	 * Message: $s2 CP has been restored by $c1.
 	 */
-	public static final SystemMessageId S2_CP_WILL_BE_RESTORED_BY_C1 = new SystemMessageId(1406);
+	public static final SystemMessageId S2_CP_HAS_BEEN_RESTORED_BY_C1 = new SystemMessageId(1406);
 	
 	/**
 	 * ID: 1407<br>

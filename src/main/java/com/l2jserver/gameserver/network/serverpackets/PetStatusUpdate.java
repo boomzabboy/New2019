@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -65,8 +65,8 @@ public class PetStatusUpdate extends L2GameServerPacket
 		writeD((int) _summon.getCurrentMp());
 		writeD(_summon.getMaxMp());
 		writeD(_summon.getLevel());
-		writeQ(_summon.getStat().getExp());
+		writeQ(_summon.getExp());
 		writeQ(_summon.getExpForThisLevel()); // 0% absolute value
-		writeQ(_summon.getExpForNextLevel()); // 100% absolute value
+		writeQ(_summon.getExpForNextLevel() - 1); // 100% absolute value
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -48,7 +48,7 @@ public enum WeaponType implements ItemType
 	private final TraitType _traitType;
 	
 	/**
-	 * Constructor of the L2WeaponType.
+	 * Constructor of the WeaponType.
 	 * @param traitType
 	 */
 	private WeaponType(TraitType traitType)
@@ -67,7 +67,7 @@ public enum WeaponType implements ItemType
 	}
 	
 	/**
-	 * @return L2TraitType the type of the WeaponType
+	 * @return TraitType the type of the WeaponType
 	 */
 	public TraitType getTraitType()
 	{

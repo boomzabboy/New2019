@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -36,8 +36,7 @@ public class VoicedCommandHandler implements IHandler<IVoicedCommandHandler, Str
 	@Override
 	public void registerHandler(IVoicedCommandHandler handler)
 	{
-		String[] ids = handler.getVoicedCommandList();
-		for (String id : ids)
+		for (String id : handler.getVoicedCommandList())
 		{
 			_datatable.put(id, handler);
 		}
@@ -46,8 +45,7 @@ public class VoicedCommandHandler implements IHandler<IVoicedCommandHandler, Str
 	@Override
 	public synchronized void removeHandler(IVoicedCommandHandler handler)
 	{
-		String[] ids = handler.getVoicedCommandList();
-		for (String id : ids)
+		for (String id : handler.getVoicedCommandList())
 		{
 			_datatable.remove(id);
 		}
@@ -72,11 +70,11 @@ public class VoicedCommandHandler implements IHandler<IVoicedCommandHandler, Str
 	
 	public static VoicedCommandHandler getInstance()
 	{
-		return SingletonHolder._instance;
+		return SingletonHolder.INSTANCE;
 	}
 	
 	private static class SingletonHolder
 	{
-		protected static final VoicedCommandHandler _instance = new VoicedCommandHandler();
+		protected static final VoicedCommandHandler INSTANCE = new VoicedCommandHandler();
 	}
 }

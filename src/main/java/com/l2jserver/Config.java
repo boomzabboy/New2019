@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  *
  * This file is part of L2J Server.
  *
@@ -77,6 +77,12 @@ import com.l2jserver.util.data.xml.IXmlReader;
 public final class Config
 {
 	private static final Logger LOG = LoggerFactory.getLogger(Config.class);
+	
+	/**
+	 * Informs(logs) the scripts being loaded.<BR>
+	 * Apply only when executing script from files.<BR>
+	 */
+	public static final boolean VERBOSE_LOADING = false;
 	
 	// --------------------------------------------------
 	// Constants
@@ -171,9 +177,11 @@ public final class Config
 	public static int MAX_EVASION;
 	public static int MIN_ABNORMAL_STATE_SUCCESS_RATE;
 	public static int MAX_ABNORMAL_STATE_SUCCESS_RATE;
+	public static int MAX_PLAYER_LEVEL;
+	public static int MAX_PET_LEVEL;
 	public static byte MAX_SUBCLASS;
-	public static byte BASE_SUBCLASS_LEVEL;
-	public static byte MAX_SUBCLASS_LEVEL;
+	public static int BASE_SUBCLASS_LEVEL;
+	public static int MAX_SUBCLASS_LEVEL;
 	public static int MAX_PVTSTORESELL_SLOTS_DWARF;
 	public static int MAX_PVTSTORESELL_SLOTS_OTHER;
 	public static int MAX_PVTSTOREBUY_SLOTS_DWARF;
@@ -228,7 +236,7 @@ public final class Config
 	public static boolean ALT_LEAVE_PARTY_LEADER;
 	public static boolean INITIAL_EQUIPMENT_EVENT;
 	public static long STARTING_ADENA;
-	public static byte STARTING_LEVEL;
+	public static int STARTING_LEVEL;
 	public static int STARTING_SP;
 	public static long MAX_ADENA;
 	public static boolean AUTO_LOOT;
@@ -459,8 +467,8 @@ public final class Config
 	public static boolean HTML_ACTION_CACHE_DEBUG;
 	public static boolean PACKET_HANDLER_DEBUG;
 	public static boolean DEVELOPER;
-	public static boolean ALT_DEV_NO_HANDLERS;
-	public static boolean ALT_DEV_NO_QUESTS;
+	public static boolean NO_HANDLERS;
+	public static boolean NO_QUESTS;
 	public static boolean ALT_DEV_NO_SPAWNS;
 	public static boolean ALT_DEV_SHOW_QUESTS_LOAD_IN_LOGS;
 	public static boolean ALT_DEV_SHOW_SCRIPTS_LOAD_IN_LOGS;
@@ -1154,10 +1162,10 @@ public final class Config
 			
 			DATABASE_ENGINE = serverSettings.getString("Database", "MySQL");
 			DATABASE_DRIVER = serverSettings.getString("Driver", "com.mysql.jdbc.Driver");
-			DATABASE_URL = serverSettings.getString("URL", "jdbc:mysql://localhost/l2jgs");
+			DATABASE_URL = serverSettings.getString("URL", "jdbc:mysql://localhost/l2jgs?useSSL=false&serverTimezone=UTC");
 			DATABASE_LOGIN = serverSettings.getString("Login", "root");
-			DATABASE_PASSWORD = serverSettings.getString("Password", "");
-			DATABASE_CONNECTION_POOL = serverSettings.getString("ConnectionPool", "C3P0");
+			DATABASE_PASSWORD = serverSettings.getString("Password", "toor");
+			DATABASE_CONNECTION_POOL = serverSettings.getString("ConnectionPool", "HikariCP");
 			DATABASE_MAX_CONNECTIONS = serverSettings.getInt("MaximumDbConnections", 10);
 			DATABASE_MAX_IDLE_TIME = serverSettings.getInt("MaximumDbIdleTime", 0);
 			
@@ -1505,9 +1513,11 @@ public final class Config
 			MAX_EVASION = character.getInt("MaxEvasion", 250);
 			MIN_ABNORMAL_STATE_SUCCESS_RATE = character.getInt("MinAbnormalStateSuccessRate", 10);
 			MAX_ABNORMAL_STATE_SUCCESS_RATE = character.getInt("MaxAbnormalStateSuccessRate", 90);
+			MAX_PLAYER_LEVEL = character.getInt("MaxPlayerLevel", 85);
+			MAX_PET_LEVEL = character.getInt("MaxPetLevel", 86);
 			MAX_SUBCLASS = character.getByte("MaxSubclass", (byte) 3);
-			BASE_SUBCLASS_LEVEL = character.getByte("BaseSubclassLevel", (byte) 40);
-			MAX_SUBCLASS_LEVEL = character.getByte("MaxSubclassLevel", (byte) 80);
+			BASE_SUBCLASS_LEVEL = character.getInt("BaseSubclassLevel", 40);
+			MAX_SUBCLASS_LEVEL = character.getInt("MaxSubclassLevel", 80);
 			MAX_PVTSTORESELL_SLOTS_DWARF = character.getInt("MaxPvtStoreSellSlotsDwarf", 4);
 			MAX_PVTSTORESELL_SLOTS_OTHER = character.getInt("MaxPvtStoreSellSlotsOther", 3);
 			MAX_PVTSTOREBUY_SLOTS_DWARF = character.getInt("MaxPvtStoreBuySlotsDwarf", 5);
@@ -1628,7 +1638,7 @@ public final class Config
 			ALT_LEAVE_PARTY_LEADER = character.getBoolean("AltLeavePartyLeader", false);
 			INITIAL_EQUIPMENT_EVENT = character.getBoolean("InitialEquipmentEvent", false);
 			STARTING_ADENA = character.getLong("StartingAdena", 0);
-			STARTING_LEVEL = character.getByte("StartingLevel", (byte) 1);
+			STARTING_LEVEL = character.getInt("StartingLevel", 1);
 			STARTING_SP = character.getInt("StartingSP", 0);
 			MAX_ADENA = character.getLong("MaxAdena", 99900000000L);
 			if (MAX_ADENA < 0)
@@ -1756,8 +1766,8 @@ public final class Config
 			HTML_ACTION_CACHE_DEBUG = General.getBoolean("HtmlActionCacheDebug", false);
 			PACKET_HANDLER_DEBUG = General.getBoolean("PacketHandlerDebug", false);
 			DEVELOPER = General.getBoolean("Developer", false);
-			ALT_DEV_NO_HANDLERS = General.getBoolean("AltDevNoHandlers", false) || Boolean.getBoolean("nohandlers");
-			ALT_DEV_NO_QUESTS = General.getBoolean("AltDevNoQuests", false) || Boolean.getBoolean("noquests");
+			NO_HANDLERS = General.getBoolean("NoHandlers", false) || Boolean.getBoolean("nohandlers");
+			NO_QUESTS = General.getBoolean("NoQuests", false) || Boolean.getBoolean("noquests");
 			ALT_DEV_NO_SPAWNS = General.getBoolean("AltDevNoSpawns", false) || Boolean.getBoolean("nospawns");
 			ALT_DEV_SHOW_QUESTS_LOAD_IN_LOGS = General.getBoolean("AltDevShowQuestsLoadInLogs", false);
 			ALT_DEV_SHOW_SCRIPTS_LOAD_IN_LOGS = General.getBoolean("AltDevShowScriptsLoadInLogs", false);
@@ -2721,7 +2731,7 @@ public final class Config
 			
 			ENABLE_UPNP = ServerSettings.getBoolean("EnableUPnP", true);
 			GAME_SERVER_LOGIN_HOST = ServerSettings.getString("LoginHostname", "127.0.0.1");
-			GAME_SERVER_LOGIN_PORT = ServerSettings.getInt("LoginPort", 9013);
+			GAME_SERVER_LOGIN_PORT = ServerSettings.getInt("LoginPort", 9014);
 			
 			LOGIN_BIND_ADDRESS = ServerSettings.getString("LoginserverHostname", "*");
 			PORT_LOGIN = ServerSettings.getInt("LoginserverPort", 2106);
@@ -2747,9 +2757,9 @@ public final class Config
 			LOGIN_SERVER_SCHEDULE_RESTART_TIME = ServerSettings.getLong("LoginRestartTime", 24);
 			
 			DATABASE_DRIVER = ServerSettings.getString("Driver", "com.mysql.jdbc.Driver");
-			DATABASE_URL = ServerSettings.getString("URL", "jdbc:mysql://localhost/l2jls");
+			DATABASE_URL = ServerSettings.getString("URL", "jdbc:mysql://localhost/l2jls?useSSL=false&serverTimezone=UTC");
 			DATABASE_LOGIN = ServerSettings.getString("Login", "root");
-			DATABASE_PASSWORD = ServerSettings.getString("Password", "");
+			DATABASE_PASSWORD = ServerSettings.getString("Password", "toor");
 			DATABASE_CONNECTION_POOL = ServerSettings.getString("ConnectionPool", "HikariCP");
 			DATABASE_MAX_CONNECTIONS = ServerSettings.getInt("MaximumDbConnections", 10);
 			DATABASE_MAX_IDLE_TIME = ServerSettings.getInt("MaximumDbIdleTime", 0);
@@ -3933,7 +3943,6 @@ public final class Config
 				parseFile(new File(IP_CONFIG_FILE));
 			}
 			else
-			// Auto configuration...
 			{
 				LOG.info("Using automatic network configuration.");
 				autoIpConfig();

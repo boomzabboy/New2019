@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -29,7 +29,6 @@ import com.l2jserver.gameserver.model.ClanPrivilege;
 import com.l2jserver.gameserver.model.L2Clan;
 import com.l2jserver.gameserver.model.L2SkillLearn;
 import com.l2jserver.gameserver.model.actor.L2Npc;
-import com.l2jserver.gameserver.model.actor.instance.L2FishermanInstance;
 import com.l2jserver.gameserver.model.actor.instance.L2NpcInstance;
 import com.l2jserver.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jserver.gameserver.model.actor.instance.L2VillageMasterInstance;
@@ -571,20 +570,13 @@ public final class RequestAcquireSkill extends L2GameClientPacket
 	 */
 	private void showSkillList(L2Npc trainer, L2PcInstance player)
 	{
-		if ((_skillType == AcquireSkillType.TRANSFORM) || (_skillType == AcquireSkillType.SUBCLASS) || (_skillType == AcquireSkillType.TRANSFER))
+		if ((_skillType == AcquireSkillType.TRANSFORM) || (_skillType == AcquireSkillType.SUBCLASS) || (_skillType == AcquireSkillType.TRANSFER) || (_skillType == AcquireSkillType.FISHING))
 		{
 			// Managed in Datapack.
 			return;
 		}
 		
-		if (trainer instanceof L2FishermanInstance)
-		{
-			L2FishermanInstance.showFishSkillList(player);
-		}
-		else
-		{
-			L2NpcInstance.showSkillList(player, trainer, player.getLearningClass());
-		}
+		L2NpcInstance.showSkillList(player, trainer, player.getLearningClass());
 	}
 	
 	/**
@@ -598,8 +590,7 @@ public final class RequestAcquireSkill extends L2GameClientPacket
 		{
 			return true;
 		}
-		final QuestState st = player.getQuestState("Q00136_MoreThanMeetsTheEye");
-		return (st != null) && st.isCompleted();
+		return player.hasQuestCompleted("Q00136_MoreThanMeetsTheEye");
 	}
 	
 	@Override

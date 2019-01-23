@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -132,7 +132,7 @@ public final class RequestExEnchantSkillSafe extends L2GameClientPacket
 				return;
 			}
 			
-			boolean check = player.getStat().removeExpAndSp(0, requiredSp, false);
+			boolean check = player.removeSp(requiredSp);
 			check &= player.destroyItem("Consume", spb.getObjectId(), 1, player, true);
 			
 			check &= player.destroyItemByItemId("Consume", Inventory.ADENA_ID, requireditems, player, true);

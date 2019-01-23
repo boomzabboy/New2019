@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -56,6 +56,7 @@ import com.l2jserver.gameserver.model.effects.L2EffectType;
 import com.l2jserver.gameserver.model.entity.TvTEvent;
 import com.l2jserver.gameserver.model.holders.ItemHolder;
 import com.l2jserver.gameserver.model.interfaces.IIdentifiable;
+import com.l2jserver.gameserver.model.skills.targets.AffectScope;
 import com.l2jserver.gameserver.model.skills.targets.L2TargetType;
 import com.l2jserver.gameserver.model.stats.BaseStats;
 import com.l2jserver.gameserver.model.stats.Formulas;
@@ -64,7 +65,6 @@ import com.l2jserver.gameserver.model.stats.functions.AbstractFunction;
 import com.l2jserver.gameserver.model.stats.functions.FuncTemplate;
 import com.l2jserver.gameserver.model.zone.ZoneId;
 import com.l2jserver.gameserver.network.SystemMessageId;
-import com.l2jserver.gameserver.network.serverpackets.FlyToLocation.FlyType;
 import com.l2jserver.gameserver.network.serverpackets.SystemMessage;
 import com.l2jserver.gameserver.util.Util;
 import com.l2jserver.util.Rnd;
@@ -89,11 +89,11 @@ public class Skill implements IIdentifiable
 	private final SkillOperateType _operateType;
 	private final int _magic;
 	private final TraitType _traitType;
-	private final boolean _staticReuse;
-	/** MP consumption. */
-	private final int _mpConsume;
+	private final boolean _reuseDelayLock;
 	/** Initial MP consumption. */
-	private final int _mpInitialConsume;
+	private final int _mpConsume1;
+	/** MP consumption. */
+	private final int _mpConsume2;
 	/** MP consumption per channeling. */
 	private final int _mpPerChanneling;
 	/** HP consumption. */
@@ -137,17 +137,13 @@ public class Skill implements IIdentifiable
 	
 	/** Target type of the skill : SELF, PARTY, CLAN, PET... */
 	private final L2TargetType _targetType;
-	private final int _feed;
+	private final AffectScope _affectScope;
 	// base success chance
-	private final double _power;
-	private final double _pvpPower;
-	private final double _pvePower;
 	private final int _magicLevel;
 	private final int _lvlBonusRate;
 	private final int _activateRate;
 	private final int _minChance;
 	private final int _maxChance;
-	private final int _blowChance;
 	
 	// Effecting area of the skill, in radius.
 	// The radius center varies according to the _targetType:
@@ -157,13 +153,10 @@ public class Skill implements IIdentifiable
 	
 	private final boolean _nextActionIsAttack;
 	
-	private final boolean _removedOnAnyActionExceptMove;
-	private final boolean _removedOnDamage;
-	
 	private final boolean _blockedInOlympiad;
 	
-	private final byte _element;
-	private final int _elementPower;
+	private final AttributeType _attributeType;
+	private final int _attributePower;
 	
 	private final BaseStats _basicProperty;
 	
@@ -173,13 +166,7 @@ public class Skill implements IIdentifiable
 	private final int _chargeConsume;
 	private final int _soulMaxConsume;
 	
-	private final boolean _isHeroSkill; // If true the skill is a Hero Skill
-	private final boolean _isGMSkill; // True if skill is GM skill
-	private final boolean _isSevenSigns;
-	
-	private final int _baseCritRate; // percent of success for skill critical hit (especially for PhysicalAttack & Blow - they're not affected by rCrit values or buffs).
 	private final boolean _directHpDmg; // If true then damage is being make directly
-	private final boolean _isTriggeredSkill; // If true the skill will take activation buff slot instead of a normal buff slot
 	private final int _effectPoint;
 	// Condition lists
 	private List<Condition> _preCondition;
@@ -190,21 +177,11 @@ public class Skill implements IIdentifiable
 	
 	private final Map<EffectScope, List<AbstractEffect>> _effectLists = new EnumMap<>(EffectScope.class);
 	
-	// Flying support
-	private final FlyType _flyType;
-	private final int _flyRadius;
-	private final float _flyCourse;
-	
 	private final boolean _isDebuff;
 	
-	private final String _attribute;
-	
-	private final boolean _ignoreShield;
-	
 	private final boolean _isSuicideAttack;
-	private final boolean _canBeDispeled;
+	private final boolean _irreplaceableBuff;
 	
-	private final boolean _isClanSkill;
 	private final boolean _excludedFromCheck;
 	private final boolean _simultaneousCast;
 	
@@ -229,10 +206,10 @@ public class Skill implements IIdentifiable
 		_operateType = set.getEnum("operateType", SkillOperateType.class);
 		_magic = set.getInt("isMagic", 0);
 		_traitType = set.getEnum("trait", TraitType.class, TraitType.NONE);
-		_staticReuse = set.getBoolean("staticReuse", false);
-		_mpConsume = set.getInt("mpConsume", 0);
-		_mpInitialConsume = set.getInt("mpInitialConsume", 0);
-		_mpPerChanneling = set.getInt("mpPerChanneling", _mpConsume);
+		_reuseDelayLock = set.getBoolean("reuseDelayLock", false);
+		_mpConsume1 = set.getInt("mpConsume1", 0);
+		_mpConsume2 = set.getInt("mpConsume2", 0);
+		_mpPerChanneling = set.getInt("mpPerChanneling", _mpConsume2);
 		_hpConsume = set.getInt("hpConsume", 0);
 		_itemConsumeCount = set.getInt("itemConsumeCount", 0);
 		_itemConsumeId = set.getInt("itemConsumeId", 0);
@@ -259,8 +236,6 @@ public class Skill implements IIdentifiable
 		_isAbnormalInstant = set.getBoolean("abnormalInstant", false);
 		parseAbnormalVisualEffect(set.getString("abnormalVisualEffect", null));
 		
-		_attribute = set.getString("attribute", "");
-		
 		_stayAfterDeath = set.getBoolean("stayAfterDeath", false);
 		_stayOnSubclassChange = set.getBoolean("stayOnSubclassChange", true);
 		
@@ -268,7 +243,6 @@ public class Skill implements IIdentifiable
 		_coolTime = set.getInt("coolTime", 0);
 		_isDebuff = set.getBoolean("isDebuff", false);
 		_isRecoveryHerb = set.getBoolean("isRecoveryHerb", false);
-		_feed = set.getInt("feed", 0);
 		_reuseHashCode = SkillData.getSkillHashCode(_id, _level);
 		
 		if (Config.ENABLE_MODIFY_SKILL_REUSE && Config.SKILL_REUSE_LIST.containsKey(_id))
@@ -322,25 +296,19 @@ public class Skill implements IIdentifiable
 		}
 		
 		_targetType = set.getEnum("targetType", L2TargetType.class, L2TargetType.SELF);
-		_power = set.getFloat("power", 0.f);
-		_pvpPower = set.getFloat("pvpPower", (float) getPower());
-		_pvePower = set.getFloat("pvePower", (float) getPower());
+		_affectScope = set.getEnum("affectScope", AffectScope.class, AffectScope.NONE);
 		_magicLevel = set.getInt("magicLvl", 0);
 		_lvlBonusRate = set.getInt("lvlBonusRate", 0);
 		_activateRate = set.getInt("activateRate", -1);
 		_minChance = set.getInt("minChance", Config.MIN_ABNORMAL_STATE_SUCCESS_RATE);
 		_maxChance = set.getInt("maxChance", Config.MAX_ABNORMAL_STATE_SUCCESS_RATE);
-		_ignoreShield = set.getBoolean("ignoreShld", false);
 		
 		_nextActionIsAttack = set.getBoolean("nextActionAttack", false);
 		
-		_removedOnAnyActionExceptMove = (_abnormalType == AbnormalType.INVINCIBILITY) || (_abnormalType == AbnormalType.HIDE);
-		_removedOnDamage = (_abnormalType == AbnormalType.SLEEP) || (_abnormalType == AbnormalType.FORCE_MEDITATION) || (_abnormalType == AbnormalType.HIDE);
-		
 		_blockedInOlympiad = set.getBoolean("blockedInOlympiad", false);
 		
-		_element = set.getByte("element", (byte) -1);
-		_elementPower = set.getInt("elementPower", 0);
+		_attributeType = set.getEnum("attributeType", AttributeType.class, AttributeType.NONE);
+		_attributePower = set.getInt("attributePower", 0);
 		
 		_basicProperty = set.getEnum("basicProperty", BaseStats.class, BaseStats.NONE);
 		
@@ -351,23 +319,11 @@ public class Skill implements IIdentifiable
 		_chargeConsume = set.getInt("chargeConsume", 0);
 		
 		_soulMaxConsume = set.getInt("soulMaxConsumeCount", 0);
-		_blowChance = set.getInt("blowChance", 0);
 		
-		_isHeroSkill = SkillTreesData.getInstance().isHeroSkill(_id, _level);
-		_isGMSkill = SkillTreesData.getInstance().isGMSkill(_id, _level);
-		_isSevenSigns = (_id > 4360) && (_id < 4367);
-		_isClanSkill = SkillTreesData.getInstance().isClanSkill(_id, _level);
-		
-		_baseCritRate = set.getInt("baseCritRate", 0);
 		_directHpDmg = set.getBoolean("dmgDirectlyToHp", false);
-		_isTriggeredSkill = set.getBoolean("isTriggeredSkill", false);
 		_effectPoint = set.getInt("effectPoint", 0);
 		
-		_flyType = set.getEnum("flyType", FlyType.class, null);
-		_flyRadius = set.getInt("flyRadius", 0);
-		_flyCourse = set.getFloat("flyCourse", 0);
-		
-		_canBeDispeled = set.getBoolean("canBeDispeled", true);
+		_irreplaceableBuff = set.getBoolean("irreplaceableBuff", false);
 		
 		_excludedFromCheck = set.getBoolean("excludedFromCheck", false);
 		_simultaneousCast = set.getBoolean("simultaneousCast", false);
@@ -395,14 +351,14 @@ public class Skill implements IIdentifiable
 		return _traitType;
 	}
 	
-	public byte getElement()
+	public AttributeType getAttributeType()
 	{
-		return _element;
+		return _attributeType;
 	}
 	
-	public int getElementPower()
+	public int getAttributePower()
 	{
-		return _elementPower;
+		return _attributePower;
 	}
 	
 	/**
@@ -412,6 +368,15 @@ public class Skill implements IIdentifiable
 	public L2TargetType getTargetType()
 	{
 		return _targetType;
+	}
+	
+	/**
+	 * Gets the affect scope of the skill.
+	 * @return the affect scope
+	 */
+	public AffectScope getAffectScope()
+	{
+		return _affectScope;
 	}
 	
 	public boolean isAOE()
@@ -433,7 +398,7 @@ public class Skill implements IIdentifiable
 	
 	public boolean isDamage()
 	{
-		return hasEffectType(L2EffectType.MAGICAL_ATTACK, L2EffectType.HP_DRAIN, L2EffectType.PHYSICAL_ATTACK, L2EffectType.PHYSICAL_ATTACK_HP_LINK);
+		return hasEffectType(L2EffectType.MAGICAL_ATTACK, L2EffectType.HP_DRAIN, L2EffectType.PHYSICAL_ATTACK);
 	}
 	
 	public boolean isOverhit()
@@ -444,43 +409,6 @@ public class Skill implements IIdentifiable
 	public boolean isSuicideAttack()
 	{
 		return _isSuicideAttack;
-	}
-	
-	/**
-	 * Return the power of the skill.
-	 * @param activeChar
-	 * @param target
-	 * @param isPvP
-	 * @param isPvE
-	 * @return
-	 */
-	public double getPower(L2Character activeChar, L2Character target, boolean isPvP, boolean isPvE)
-	{
-		if (activeChar == null)
-		{
-			return getPower(isPvP, isPvE);
-		}
-		
-		if (hasEffectType(L2EffectType.DEATH_LINK))
-		{
-			return getPower(isPvP, isPvE) * (-((activeChar.getCurrentHp() * 2) / activeChar.getMaxHp()) + 2);
-		}
-		
-		if (hasEffectType(L2EffectType.PHYSICAL_ATTACK_HP_LINK))
-		{
-			return getPower(isPvP, isPvE) * (-((target.getCurrentHp() * 2) / target.getMaxHp()) + 2);
-		}
-		return getPower(isPvP, isPvE);
-	}
-	
-	public double getPower()
-	{
-		return _power;
-	}
-	
-	public double getPower(boolean isPvP, boolean isPvE)
-	{
-		return isPvE ? _pvePower : isPvP ? _pvpPower : _power;
 	}
 	
 	/**
@@ -618,7 +546,7 @@ public class Skill implements IIdentifiable
 	 */
 	public boolean isRemovedOnAnyActionExceptMove()
 	{
-		return _removedOnAnyActionExceptMove;
+		return (_abnormalType == AbnormalType.INVINCIBILITY) || (_abnormalType == AbnormalType.HIDE);
 	}
 	
 	/**
@@ -626,7 +554,7 @@ public class Skill implements IIdentifiable
 	 */
 	public boolean isRemovedOnDamage()
 	{
-		return _removedOnDamage;
+		return (_abnormalType == AbnormalType.SLEEP) || (_abnormalType == AbnormalType.FORCE_MEDITATION) || (_abnormalType == AbnormalType.HIDE);
 	}
 	
 	/**
@@ -783,27 +711,35 @@ public class Skill implements IIdentifiable
 	}
 	
 	/**
+	 * @return Returns true to set trigger skills.
+	 */
+	public boolean isTrigger()
+	{
+		return _magic == 4;
+	}
+	
+	/**
 	 * @return Returns true to set static reuse.
 	 */
-	public boolean isStaticReuse()
+	public boolean isReuseDelayLocked()
 	{
-		return _staticReuse;
+		return _reuseDelayLock;
 	}
 	
 	/**
-	 * @return Returns the mpConsume.
+	 * @return Returns the mpConsume1.
 	 */
-	public int getMpConsume()
+	public int getMpConsume1()
 	{
-		return _mpConsume;
+		return _mpConsume1;
 	}
 	
 	/**
-	 * @return Returns the mpInitialConsume.
+	 * @return Returns the mpConsume2.
 	 */
-	public int getMpInitialConsume()
+	public int getMpConsume2()
 	{
-		return _mpInitialConsume;
+		return _mpConsume2;
 	}
 	
 	/**
@@ -888,9 +824,9 @@ public class Skill implements IIdentifiable
 		return (_operateType != null) && _operateType.isChanneling();
 	}
 	
-	public boolean isTriggeredSkill()
+	public boolean isFlyType()
 	{
-		return _isTriggeredSkill;
+		return (_operateType != null) && _operateType.isFlyType();
 	}
 	
 	/**
@@ -909,7 +845,7 @@ public class Skill implements IIdentifiable
 	
 	public boolean useSoulShot()
 	{
-		return hasEffectType(L2EffectType.PHYSICAL_ATTACK, L2EffectType.PHYSICAL_ATTACK_HP_LINK);
+		return hasEffectType(L2EffectType.PHYSICAL_ATTACK);
 	}
 	
 	public boolean useSpiritShot()
@@ -929,17 +865,17 @@ public class Skill implements IIdentifiable
 	
 	public boolean isHeroSkill()
 	{
-		return _isHeroSkill;
+		return SkillTreesData.getInstance().isHeroSkill(_id, _level);
 	}
 	
 	public boolean isGMSkill()
 	{
-		return _isGMSkill;
+		return SkillTreesData.getInstance().isGMSkill(_id, _level);
 	}
 	
 	public boolean is7Signs()
 	{
-		return _isSevenSigns;
+		return (_id > 4360) && (_id < 4367);
 	}
 	
 	/**
@@ -961,29 +897,9 @@ public class Skill implements IIdentifiable
 		return _soulMaxConsume;
 	}
 	
-	public int getBaseCritRate()
-	{
-		return _baseCritRate;
-	}
-	
 	public boolean getDmgDirectlyToHP()
 	{
 		return _directHpDmg;
-	}
-	
-	public FlyType getFlyType()
-	{
-		return _flyType;
-	}
-	
-	public int getFlyRadius()
-	{
-		return _flyRadius;
-	}
-	
-	public float getFlyCourse()
-	{
-		return _flyCourse;
 	}
 	
 	public boolean isStayAfterDeath()
@@ -1399,6 +1315,12 @@ public class Skill implements IIdentifiable
 		if (!self && !passive)
 		{
 			final BuffInfo info = new BuffInfo(effector, effected, this);
+			
+			if (effector.isPlayer() && (getMaxSoulConsumeCount() > 0))
+			{
+				info.setCharges(effector.getActingPlayer().decreaseSouls(getMaxSoulConsumeCount()));
+			}
+			
 			if (addContinuousEffects && (abnormalTime > 0))
 			{
 				info.setAbnormalTime(abnormalTime);
@@ -1631,14 +1553,6 @@ public class Skill implements IIdentifiable
 	}
 	
 	/**
-	 * @return pet food
-	 */
-	public int getFeed()
-	{
-		return _feed;
-	}
-	
-	/**
 	 * used for tracking item id in case that item consume cannot be used
 	 * @return reference item id
 	 */
@@ -1652,27 +1566,13 @@ public class Skill implements IIdentifiable
 		_refId = val;
 	}
 	
-	public String getAttributeName()
-	{
-		return _attribute;
-	}
-	
 	/**
-	 * @return the _blowChance
+	 * Verify if the skill can be replaced.
+	 * @return {@code true} if skill can be replaced, {@code false} otherwise
 	 */
-	public int getBlowChance()
+	public boolean isIrreplaceableBuff()
 	{
-		return _blowChance;
-	}
-	
-	public boolean ignoreShield()
-	{
-		return _ignoreShield;
-	}
-	
-	public boolean canBeDispeled()
-	{
-		return _canBeDispeled;
+		return _irreplaceableBuff;
 	}
 	
 	/**
@@ -1681,12 +1581,12 @@ public class Skill implements IIdentifiable
 	 */
 	public boolean canBeStolen()
 	{
-		return !isPassive() && !isToggle() && !isDebuff() && !isHeroSkill() && !isGMSkill() && !(isStatic() && (getId() != CommonSkill.CARAVANS_SECRET_MEDICINE.getId())) && canBeDispeled() && (getId() != CommonSkill.SERVITOR_SHARE.getId());
+		return !isPassive() && !isToggle() && !isDebuff() && !isHeroSkill() && !isGMSkill() && !isIrreplaceableBuff() && !(isStatic() && (getId() != CommonSkill.CARAVANS_SECRET_MEDICINE.getId()) && (getMagicLevel() >= 0));
 	}
 	
 	public boolean isClanSkill()
 	{
-		return _isClanSkill;
+		return SkillTreesData.getInstance().isClanSkill(_id, _level);
 	}
 	
 	public boolean isExcludedFromCheck()

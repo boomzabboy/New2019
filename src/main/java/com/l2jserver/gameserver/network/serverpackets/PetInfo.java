@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -127,13 +127,13 @@ public class PetInfo extends L2GameServerPacket
 		writeD(_maxHp);// max hp
 		writeD((int) _summon.getCurrentMp());// current mp
 		writeD(_maxMp);// max mp
-		writeD(_summon.getStat().getSp()); // sp
+		writeD(_summon.getSp()); // sp
 		writeD(_summon.getLevel());// lvl
-		writeQ(_summon.getStat().getExp());
+		writeQ(_summon.getExp());
 		
-		if (_summon.getExpForThisLevel() > _summon.getStat().getExp())
+		if (_summon.getExpForThisLevel() > _summon.getExp())
 		{
-			writeQ(_summon.getStat().getExp());// 0% absolute value
+			writeQ(_summon.getExp());// 0% absolute value
 		}
 		else
 		{

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -27,6 +27,7 @@ import com.l2jserver.gameserver.model.items.instance.L2ItemInstance;
 import com.l2jserver.gameserver.model.items.type.CrystalType;
 import com.l2jserver.gameserver.model.items.type.EtcItemType;
 import com.l2jserver.gameserver.model.items.type.ItemType;
+import com.l2jserver.gameserver.model.items.type.ItemType2;
 import com.l2jserver.gameserver.util.Util;
 
 /**
@@ -148,13 +149,13 @@ public abstract class AbstractEnchantItem
 	 * @param type2
 	 * @return {@code true} if current type2 is valid to be enchanted, {@code false} otherwise
 	 */
-	private final boolean isValidItemType(int type2)
+	private final boolean isValidItemType(ItemType2 type2)
 	{
-		if (type2 == L2Item.TYPE2_WEAPON)
+		if (type2 == ItemType2.WEAPON)
 		{
 			return isWeapon();
 		}
-		else if ((type2 == L2Item.TYPE2_SHIELD_ARMOR) || (type2 == L2Item.TYPE2_ACCESSORY))
+		else if ((type2 == ItemType2.SHIELD_ARMOR) || (type2 == ItemType2.ACCESSORY))
 		{
 			return !isWeapon();
 		}

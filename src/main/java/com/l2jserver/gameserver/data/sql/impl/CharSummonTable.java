@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -156,7 +156,7 @@ public class CharSummonTable
 		{
 			pet.setCurrentHp(pet.getMaxHp());
 			pet.setCurrentMp(pet.getMaxMp());
-			pet.getStat().setExp(pet.getExpForThisLevel());
+			pet.setExp(pet.getExpForThisLevel());
 			pet.setCurrentFed(pet.getMaxFed());
 		}
 		

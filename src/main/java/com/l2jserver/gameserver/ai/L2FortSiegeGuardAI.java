@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -436,7 +436,7 @@ public class L2FortSiegeGuardAI extends L2CharacterAI implements Runnable
 					{
 						for (Skill sk : _selfAnalysis.healSkills)
 						{
-							if (_actor.getCurrentMp() < sk.getMpConsume())
+							if (_actor.getCurrentMp() < sk.getMpConsume2())
 							{
 								continue;
 							}
@@ -495,7 +495,7 @@ public class L2FortSiegeGuardAI extends L2CharacterAI implements Runnable
 				{
 					for (Skill sk : _selfAnalysis.healSkills)
 					{
-						if (_actor.getCurrentMp() < sk.getMpConsume())
+						if (_actor.getCurrentMp() < sk.getMpConsume2())
 						{
 							continue;
 						}
@@ -594,14 +594,14 @@ public class L2FortSiegeGuardAI extends L2CharacterAI implements Runnable
 			{
 				int castRange = sk.getCastRange();
 				
-				if ((dist_2 <= (castRange * castRange)) && (castRange > 70) && !_actor.isSkillDisabled(sk) && (_actor.getCurrentMp() >= _actor.getStat().getMpConsume(sk)) && !sk.isPassive())
+				if ((dist_2 <= (castRange * castRange)) && (castRange > 70) && !_actor.isSkillDisabled(sk) && (_actor.getCurrentMp() >= _actor.getStat().getMpConsume2(sk)) && !sk.isPassive())
 				{
 					
 					L2Object OldTarget = _actor.getTarget();
-					if ((sk.isContinuous() && !sk.isDebuff()) || (sk.hasEffectType(L2EffectType.HEAL)))
+					if ((sk.isContinuous() && !sk.isDebuff()) || (sk.hasEffectType(L2EffectType.HP)))
 					{
 						boolean useSkillSelf = true;
-						if ((sk.hasEffectType(L2EffectType.HEAL)) && (_actor.getCurrentHp() > (int) (_actor.getMaxHp() / 1.5)))
+						if ((sk.hasEffectType(L2EffectType.HP)) && (_actor.getCurrentHp() > (int) (_actor.getMaxHp() / 1.5)))
 						{
 							useSkillSelf = false;
 							break;
@@ -740,13 +740,13 @@ public class L2FortSiegeGuardAI extends L2CharacterAI implements Runnable
 				{
 					int castRange = sk.getCastRange();
 					
-					if (((castRange * castRange) >= dist_2) && !sk.isPassive() && (_actor.getCurrentMp() >= _actor.getStat().getMpConsume(sk)) && !_actor.isSkillDisabled(sk))
+					if (((castRange * castRange) >= dist_2) && !sk.isPassive() && (_actor.getCurrentMp() >= _actor.getStat().getMpConsume2(sk)) && !_actor.isSkillDisabled(sk))
 					{
 						L2Object OldTarget = _actor.getTarget();
-						if ((sk.isContinuous() && !sk.isDebuff()) || (sk.hasEffectType(L2EffectType.HEAL)))
+						if ((sk.isContinuous() && !sk.isDebuff()) || (sk.hasEffectType(L2EffectType.HP)))
 						{
 							boolean useSkillSelf = true;
-							if ((sk.hasEffectType(L2EffectType.HEAL)) && (_actor.getCurrentHp() > (int) (_actor.getMaxHp() / 1.5)))
+							if ((sk.hasEffectType(L2EffectType.HP)) && (_actor.getCurrentHp() > (int) (_actor.getMaxHp() / 1.5)))
 							{
 								useSkillSelf = false;
 								break;

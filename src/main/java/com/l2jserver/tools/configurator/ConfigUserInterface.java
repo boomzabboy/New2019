@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -62,6 +62,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
+import javax.swing.WindowConstants;
 
 import com.l2jserver.tools.configurator.ConfigUserInterface.ConfigFile.ConfigComment;
 import com.l2jserver.tools.configurator.ConfigUserInterface.ConfigFile.ConfigProperty;
@@ -83,9 +84,6 @@ public class ConfigUserInterface extends JFrame implements ActionListener
 	
 	private ResourceBundle _bundle;
 	
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args)
 	{
 		try
@@ -110,7 +108,7 @@ public class ConfigUserInterface extends JFrame implements ActionListener
 	{
 		setBundle(bundle);
 		setTitle(bundle.getString("toolName"));
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		this.setSize(750, 500);
 		setLayout(new GridBagLayout());
 		
@@ -286,7 +284,7 @@ public class ConfigUserInterface extends JFrame implements ActionListener
 				}
 				else if (line.indexOf('=') >= 0)
 				{
-					String[] kv = line.split("=");
+					String[] kv = line.split("=", 2);
 					String key = kv[0].trim();
 					StringBuilder value = new StringBuilder();
 					if (kv.length > 1)
@@ -703,7 +701,8 @@ public class ConfigUserInterface extends JFrame implements ActionListener
 		}
 		else if (cmd.equals("about"))
 		{
-			JOptionPane.showMessageDialog(ConfigUserInterface.this, getBundle().getString("credits") + EOL + "http://www.l2jserver.com" + EOL + EOL + getBundle().getString("icons") + EOL + EOL + getBundle().getString("langText") + EOL + getBundle().getString("translation"), getBundle().getString("aboutItem"), JOptionPane.INFORMATION_MESSAGE, ImagesTable.getImage("l2jserverlogo.png"));
+			JOptionPane.showMessageDialog(ConfigUserInterface.this, getBundle().getString("credits") + EOL + "http://www.l2jserver.com" + EOL + EOL + getBundle().getString("icons") + EOL + EOL + getBundle().getString("langText") + EOL
+				+ getBundle().getString("translation"), getBundle().getString("aboutItem"), JOptionPane.INFORMATION_MESSAGE, ImagesTable.getImage("l2jserverlogo.png"));
 		}
 	}
 	

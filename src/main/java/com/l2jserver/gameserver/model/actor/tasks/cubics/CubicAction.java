@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -98,7 +98,7 @@ public final class CubicAction implements Runnable
 			{
 				for (BuffInfo info : _cubic.getOwner().getEffectList().getDebuffs())
 				{
-					if (info.getSkill().canBeDispeled())
+					if (!info.getSkill().isIrreplaceableBuff())
 					{
 						useCubicCure = true;
 						info.getEffected().getEffectList().stopSkillEffects(true, info.getSkill());
@@ -194,7 +194,7 @@ public final class CubicAction implements Runnable
 						}
 						_cubic.useCubicDisabler(skill, targets);
 					}
-					else if (skill.hasEffectType(L2EffectType.DMG_OVER_TIME, L2EffectType.DMG_OVER_TIME_PERCENT))
+					else if (skill.hasEffectType(L2EffectType.DMG_OVER_TIME))
 					{
 						if (Config.DEBUG)
 						{

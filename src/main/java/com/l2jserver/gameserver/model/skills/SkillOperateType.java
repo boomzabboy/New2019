@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -162,6 +162,22 @@ public enum SkillOperateType
 		{
 			case CA1:
 			case CA5:
+				return true;
+			default:
+				return false;
+		}
+	}
+	
+	/**
+	 * Verifies if the operative type correspond to a fly skill.
+	 * @return {@code true} if the operative skill type is fly, {@code false} otherwise
+	 */
+	public boolean isFlyType()
+	{
+		switch (this)
+		{
+			case DA1:
+			case DA2:
 				return true;
 			default:
 				return false;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -56,7 +56,7 @@ public abstract class AbstractEffect
 	/** Effect name. */
 	private final String _name;
 	/** Ticks. */
-	private final int _ticks;
+	private int _ticks;
 	
 	/**
 	 * Abstract effect constructor.
@@ -70,7 +70,6 @@ public abstract class AbstractEffect
 		_attachCond = attachCond;
 		// _applyCond = applyCond;
 		_name = set.getString("name");
-		_ticks = set.getInt("ticks", 0);
 	}
 	
 	/**
@@ -87,7 +86,7 @@ public abstract class AbstractEffect
 		final Class<? extends AbstractEffect> handler = EffectHandler.getInstance().getHandler(name);
 		if (handler == null)
 		{
-			_log.warning(AbstractEffect.class.getSimpleName() + ": Requested unexistent effect handler: " + name);
+			_log.warning(AbstractEffect.class.getSimpleName() + ": Requested unexistent effect handler: " + name + " in skill[" + set.getInt("id") + "]");
 			return null;
 		}
 		
@@ -98,7 +97,7 @@ public abstract class AbstractEffect
 		}
 		catch (NoSuchMethodException | SecurityException e)
 		{
-			_log.warning(AbstractEffect.class.getSimpleName() + ": Requested unexistent constructor for effect handler: " + name + ": " + e.getMessage());
+			_log.warning(AbstractEffect.class.getSimpleName() + ": Requested unexistent constructor for effect handler: " + name + " in skill[" + set.getInt("id") + "] : " + e.getMessage());
 			return null;
 		}
 		
@@ -108,7 +107,7 @@ public abstract class AbstractEffect
 		}
 		catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
 		{
-			_log.warning(AbstractEffect.class.getSimpleName() + ": Unable to initialize effect handler: " + name + ": " + e.getMessage());
+			_log.warning(AbstractEffect.class.getSimpleName() + ": Unable to initialize effect handler: " + name + " in skill[" + set.getInt("id") + "] : " + e.getMessage());
 		}
 		return null;
 	}
@@ -154,6 +153,15 @@ public abstract class AbstractEffect
 	public int getTicks()
 	{
 		return _ticks;
+	}
+	
+	/**
+	 * Sets the effect ticks
+	 * @param ticks the ticks
+	 */
+	protected void setTicks(int ticks)
+	{
+		_ticks = ticks;
 	}
 	
 	public double getTicksMultiplier()

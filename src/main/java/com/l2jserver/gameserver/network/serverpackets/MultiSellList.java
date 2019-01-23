@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -83,7 +83,7 @@ public final class MultiSellList extends L2GameServerPacket
 				if (ing.getTemplate() != null)
 				{
 					writeD(ing.getTemplate().getBodyPart());
-					writeH(ing.getTemplate().getType2());
+					writeH(ing.getTemplate().getType2().getId());
 				}
 				else
 				{
@@ -124,7 +124,7 @@ public final class MultiSellList extends L2GameServerPacket
 			for (Ingredient ing : ent.getIngredients())
 			{
 				writeD(ing.getItemId());
-				writeH(ing.getTemplate() != null ? ing.getTemplate().getType2() : 65535);
+				writeH(ing.getTemplate() != null ? ing.getTemplate().getType2().getId() : 65535);
 				writeQ(ing.getItemCount());
 				if (ing.getItemInfo() != null)
 				{

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -150,7 +150,7 @@ public final class RequestExEnchantSkillUntrain extends L2GameClientPacket
 			return;
 		}
 		
-		player.getStat().addSp((int) (requiredSp * 0.8));
+		player.addSp((int) (requiredSp * 0.8));
 		
 		if (Config.LOG_SKILL_ENCHANTS)
 		{

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -18,16 +18,12 @@
  */
 package com.l2jserver.gameserver.model.actor.stat;
 
-import com.l2jserver.gameserver.data.xml.impl.ExperienceData;
+import com.l2jserver.Config;
 import com.l2jserver.gameserver.data.xml.impl.PetDataTable;
 import com.l2jserver.gameserver.model.actor.L2Character;
 import com.l2jserver.gameserver.model.actor.instance.L2PetInstance;
 import com.l2jserver.gameserver.model.skills.Skill;
 import com.l2jserver.gameserver.model.stats.Stats;
-import com.l2jserver.gameserver.network.SystemMessageId;
-import com.l2jserver.gameserver.network.serverpackets.SocialAction;
-import com.l2jserver.gameserver.network.serverpackets.StatusUpdate;
-import com.l2jserver.gameserver.network.serverpackets.SystemMessage;
 
 public class PetStat extends SummonStat
 {
@@ -57,44 +53,10 @@ public class PetStat extends SummonStat
 			return false;
 		}
 		
-		SystemMessage sm = SystemMessage.getSystemMessage(SystemMessageId.PET_EARNED_S1_EXP);
-		sm.addLong(addToExp);
+		// Not used in H5
+		// SystemMessage sm = SystemMessage.getSystemMessage(SystemMessageId.PET_EARNED_S1_EXP).addLong(addToExp);
 		getActiveChar().updateAndBroadcastStatus(1);
-		getActiveChar().sendPacket(sm);
 		return true;
-	}
-	
-	@Override
-	public final boolean addLevel(byte value)
-	{
-		if ((getLevel() + value) > (getMaxLevel() - 1))
-		{
-			return false;
-		}
-		
-		boolean levelIncreased = super.addLevel(value);
-		
-		// Sync up exp with current level
-		// if (getExp() > getExpForLevel(getLevel() + 1) || getExp() < getExpForLevel(getLevel())) setExp(Experience.LEVEL[getLevel()]);
-		
-		StatusUpdate su = new StatusUpdate(getActiveChar());
-		su.addAttribute(StatusUpdate.LEVEL, getLevel());
-		su.addAttribute(StatusUpdate.MAX_HP, getMaxHp());
-		su.addAttribute(StatusUpdate.MAX_MP, getMaxMp());
-		getActiveChar().broadcastPacket(su);
-		if (levelIncreased)
-		{
-			getActiveChar().broadcastPacket(new SocialAction(getActiveChar().getObjectId(), SocialAction.LEVEL_UP));
-		}
-		// Send a Server->Client packet PetInfo to the L2PcInstance
-		getActiveChar().updateAndBroadcastStatus(1);
-		
-		if (getActiveChar().getControlItem() != null)
-		{
-			getActiveChar().getControlItem().setEnchantLevel(getLevel());
-		}
-		
-		return levelIncreased;
 	}
 	
 	@Override
@@ -102,7 +64,7 @@ public class PetStat extends SummonStat
 	{
 		try
 		{
-			return PetDataTable.getInstance().getPetLevelData(getActiveChar().getId(), level).getPetMaxExp();
+			return PetDataTable.getInstance().getPetLevelData(getActiveChar().getId(), Math.min(level, getMaxExpLevel())).getPetMaxExp();
 		}
 		catch (NullPointerException e)
 		{
@@ -112,6 +74,37 @@ public class PetStat extends SummonStat
 			}
 			throw e;
 		}
+	}
+	
+	@Override
+	public void setLevel(int value)
+	{
+		getActiveChar().setPetData(PetDataTable.getInstance().getPetLevelData(getActiveChar().getTemplate().getId(), value));
+		if (getActiveChar().getPetLevelData() == null)
+		{
+			throw new IllegalArgumentException("No pet data for npc: " + getActiveChar().getTemplate().getId() + " level: " + value);
+		}
+		getActiveChar().stopFeed();
+		super.setLevel(value);
+		
+		getActiveChar().startFeed();
+		
+		if (getActiveChar().getControlItem() != null)
+		{
+			getActiveChar().getControlItem().setEnchantLevel(getLevel());
+		}
+	}
+	
+	@Override
+	public int getMaxLevel()
+	{
+		return Config.MAX_PET_LEVEL;
+	}
+	
+	@Override
+	public int getMaxExpLevel()
+	{
+		return Config.MAX_PET_LEVEL + 1;
 	}
 	
 	@Override
@@ -128,25 +121,6 @@ public class PetStat extends SummonStat
 	public final int getFeedNormal()
 	{
 		return getActiveChar().getPetLevelData().getPetFeedNormal();
-	}
-	
-	@Override
-	public void setLevel(byte value)
-	{
-		getActiveChar().setPetData(PetDataTable.getInstance().getPetLevelData(getActiveChar().getTemplate().getId(), value));
-		if (getActiveChar().getPetLevelData() == null)
-		{
-			throw new IllegalArgumentException("No pet data for npc: " + getActiveChar().getTemplate().getId() + " level: " + value);
-		}
-		getActiveChar().stopFeed();
-		super.setLevel(value);
-		
-		getActiveChar().startFeed();
-		
-		if (getActiveChar().getControlItem() != null)
-		{
-			getActiveChar().getControlItem().setEnchantLevel(getLevel());
-		}
 	}
 	
 	public final int getMaxFeed()
@@ -210,11 +184,5 @@ public class PetStat extends SummonStat
 			val = val / 2;
 		}
 		return val;
-	}
-	
-	@Override
-	public int getMaxLevel()
-	{
-		return ExperienceData.getInstance().getMaxPetLevel();
 	}
 }

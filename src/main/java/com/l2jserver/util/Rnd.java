@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -259,7 +259,7 @@ public final class Rnd
 		
 		public ThreadLocalRandom()
 		{
-			_seedLocal = new ThreadLocal<Seed>()
+			_seedLocal = new ThreadLocal<>()
 			{
 				@Override
 				public final Seed initialValue()
@@ -271,7 +271,7 @@ public final class Rnd
 		
 		public ThreadLocalRandom(final long seed)
 		{
-			_seedLocal = new ThreadLocal<Seed>()
+			_seedLocal = new ThreadLocal<>()
 			{
 				@Override
 				public final Seed initialValue()
@@ -360,13 +360,13 @@ public final class Rnd
 		{
 			case UNSECURE_ATOMIC:
 				return new RandomContainer(new Random());
-				
+			
 			case UNSECURE_VOLATILE:
 				return new RandomContainer(new NonAtomicRandom());
-				
+			
 			case UNSECURE_THREAD_LOCAL:
 				return new RandomContainer(new ThreadLocalRandom());
-				
+			
 			case SECURE:
 				return new RandomContainer(new SecureRandom());
 		}
@@ -452,5 +452,15 @@ public final class Rnd
 	public static final long nextLong()
 	{
 		return rnd.nextLong();
+	}
+	
+	/**
+	 * @param <T>
+	 * @param T[]
+	 * @return A random element in this array
+	 */
+	public static <T> T randomElement(T[] array)
+	{
+		return array[Rnd.get(array.length)];
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -66,6 +66,8 @@ public final class BuffInfo
 	private boolean _isRemoved = false;
 	/** If {@code true} then this effect is in use (or has been stop because an Herb took place). */
 	private boolean _isInUse = true;
+	
+	private int _charges = 0;
 	
 	/**
 	 * Buff Info constructor.
@@ -464,6 +466,22 @@ public final class BuffInfo
 			}
 		}
 		return 0;
+	}
+	
+	/**
+	 * @return the loaded charges
+	 */
+	public int getCharges()
+	{
+		return _charges;
+	}
+	
+	/**
+	 * @param set loaded charges
+	 */
+	public void setCharges(int charges)
+	{
+		_charges = charges;
 	}
 	
 	@Override

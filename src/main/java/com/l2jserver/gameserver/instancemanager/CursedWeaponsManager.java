@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -265,7 +265,13 @@ public final class CursedWeaponsManager
 	
 	public synchronized void checkDrop(L2Attackable attackable, L2PcInstance player)
 	{
-		if ((attackable instanceof L2DefenderInstance) || (attackable instanceof L2RiftInvaderInstance) || (attackable instanceof L2FestivalMonsterInstance) || (attackable instanceof L2GuardInstance) || (attackable instanceof L2GrandBossInstance) || (attackable instanceof L2FeedableBeastInstance) || (attackable instanceof L2FortCommanderInstance))
+		// Cursed weapons cannot drop in instance
+		if (attackable.getInstanceId() != 0)
+		{
+			return;
+		}
+		if ((attackable instanceof L2DefenderInstance) || (attackable instanceof L2RiftInvaderInstance) || (attackable instanceof L2FestivalMonsterInstance) || (attackable instanceof L2GuardInstance) || (attackable instanceof L2GrandBossInstance) || (attackable instanceof L2FeedableBeastInstance)
+			|| (attackable instanceof L2FortCommanderInstance))
 		{
 			return;
 		}

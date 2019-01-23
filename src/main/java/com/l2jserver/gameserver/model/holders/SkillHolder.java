@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -30,6 +30,12 @@ public class SkillHolder
 	private final int _skillId;
 	private final int _skillLvl;
 	
+	public SkillHolder(int skillId)
+	{
+		_skillId = skillId;
+		_skillLvl = 1;
+	}
+	
 	public SkillHolder(int skillId, int skillLvl)
 	{
 		_skillId = skillId;
@@ -55,6 +61,11 @@ public class SkillHolder
 	public final Skill getSkill()
 	{
 		return SkillData.getInstance().getSkill(_skillId, Math.max(_skillLvl, 1));
+	}
+	
+	public final Skill getSkill(int levelOverride)
+	{
+		return SkillData.getInstance().getSkill(_skillId, Math.max(levelOverride, 1));
 	}
 	
 	@Override

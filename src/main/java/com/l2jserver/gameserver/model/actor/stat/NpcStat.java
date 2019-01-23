@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -28,7 +28,7 @@ public class NpcStat extends CharStat
 	}
 	
 	@Override
-	public byte getLevel()
+	public int getLevel()
 	{
 		return getActiveChar().getTemplate().getLevel();
 	}

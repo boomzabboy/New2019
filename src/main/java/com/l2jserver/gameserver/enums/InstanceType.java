@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -104,7 +104,6 @@ public enum InstanceType
 	L2FortDoormenInstance(L2DoormenInstance),
 	L2ClanHallDoormenInstance(L2DoormenInstance),
 	// Custom
-	L2ClassMasterInstance(L2NpcInstance),
 	L2NpcBufferInstance(L2Npc),
 	L2EventMobInstance(L2Npc);
 	

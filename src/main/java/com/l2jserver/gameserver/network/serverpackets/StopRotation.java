@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -36,6 +36,6 @@ public class StopRotation extends L2GameServerPacket
 		writeD(_charObjId);
 		writeD(_degree);
 		writeD(_speed);
-		writeC(0); // ?
+		writeD(0); // ? bluff effect related ?
 	}
 }

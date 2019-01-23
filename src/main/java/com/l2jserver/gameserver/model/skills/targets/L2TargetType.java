@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -30,6 +30,8 @@ public enum L2TargetType
 	AREA_UNDEAD,
 	AURA,
 	AURA_CORPSE_MOB,
+	AURA_FRIENDLY,
+	AURA_UNDEAD_ENEMY,
 	BEHIND_AREA,
 	BEHIND_AURA,
 	CLAN,
@@ -38,6 +40,8 @@ public enum L2TargetType
 	CORPSE,
 	CORPSE_CLAN,
 	CORPSE_MOB,
+	ENEMY,
+	ENEMY_ONLY,
 	ENEMY_SUMMON,
 	FLAGPOLE,
 	FRONT_AREA,

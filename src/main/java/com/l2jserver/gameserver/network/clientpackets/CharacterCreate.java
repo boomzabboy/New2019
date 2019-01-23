@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -27,9 +27,9 @@ import com.l2jserver.Config;
 import com.l2jserver.gameserver.data.sql.impl.CharNameTable;
 import com.l2jserver.gameserver.data.xml.impl.InitialEquipmentData;
 import com.l2jserver.gameserver.data.xml.impl.InitialShortcutData;
+import com.l2jserver.gameserver.data.xml.impl.PlayerCreationPointData;
 import com.l2jserver.gameserver.data.xml.impl.SkillTreesData;
 import com.l2jserver.gameserver.datatables.SkillData;
-import com.l2jserver.gameserver.instancemanager.QuestManager;
 import com.l2jserver.gameserver.model.L2SkillLearn;
 import com.l2jserver.gameserver.model.L2World;
 import com.l2jserver.gameserver.model.Location;
@@ -43,8 +43,6 @@ import com.l2jserver.gameserver.model.events.EventDispatcher;
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerCreate;
 import com.l2jserver.gameserver.model.items.PcItemTemplate;
 import com.l2jserver.gameserver.model.items.instance.L2ItemInstance;
-import com.l2jserver.gameserver.model.quest.Quest;
-import com.l2jserver.gameserver.model.quest.State;
 import com.l2jserver.gameserver.network.L2GameClient;
 import com.l2jserver.gameserver.network.serverpackets.CharCreateFail;
 import com.l2jserver.gameserver.network.serverpackets.CharCreateOk;
@@ -218,7 +216,7 @@ public final class CharacterCreate extends L2GameClientPacket
 		}
 		
 		final L2PcTemplate template = newChar.getTemplate();
-		Location createLoc = template.getCreationPoint();
+		Location createLoc = PlayerCreationPointData.getInstance().getCreationPoint(template.getClassId());
 		newChar.setXYZInvisible(createLoc.getX(), createLoc.getY(), createLoc.getZ());
 		newChar.setTitle("");
 		
@@ -228,11 +226,11 @@ public final class CharacterCreate extends L2GameClientPacket
 		}
 		if (Config.STARTING_LEVEL > 1)
 		{
-			newChar.getStat().addLevel((byte) (Config.STARTING_LEVEL - 1));
+			newChar.addLevel(Config.STARTING_LEVEL - 1);
 		}
 		if (Config.STARTING_SP > 0)
 		{
-			newChar.getStat().addSp(Config.STARTING_SP);
+			newChar.addSp(Config.STARTING_SP);
 		}
 		
 		final List<PcItemTemplate> initialItems = InitialEquipmentData.getInstance().getEquipmentList(newChar.getClassId());
@@ -267,11 +265,6 @@ public final class CharacterCreate extends L2GameClientPacket
 		// Register all shortcuts for actions, skills and items for this new character.
 		InitialShortcutData.getInstance().registerAllShortcuts(newChar);
 		
-		if (!Config.DISABLE_TUTORIAL)
-		{
-			startTutorialQuest(newChar);
-		}
-		
 		EventDispatcher.getInstance().notifyEvent(new OnPlayerCreate(newChar, newChar.getObjectId(), newChar.getName(), client), Containers.Players());
 		
 		newChar.setOnlineStatus(true, false);
@@ -284,23 +277,6 @@ public final class CharacterCreate extends L2GameClientPacket
 		{
 			_log.fine("Character init end");
 		}
-	}
-	
-	/**
-	 * TODO: Unhardcode it using the new listeners.
-	 * @param player
-	 */
-	public void startTutorialQuest(L2PcInstance player)
-	{
-		if (player.getQuestState(Quest.TUTORIAL) == null)
-		{
-			final Quest q = QuestManager.getInstance().getQuest(Quest.TUTORIAL);
-			if (q != null)
-			{
-				q.newQuestState(player).setState(State.STARTED);
-			}
-		}
-		
 	}
 	
 	@Override

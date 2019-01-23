@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2017 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -121,10 +121,10 @@ public class SubclassDAOMySQLImpl implements SubclassDAO
 			{
 				while (rs.next())
 				{
-					final SubClass subClass = new SubClass();
+					final SubClass subClass = new SubClass(player);
 					subClass.setClassId(rs.getInt("class_id"));
-					subClass.setLevel(rs.getByte("level"));
 					subClass.setExp(rs.getLong("exp"));
+					subClass.setLevel(rs.getInt("level"));
 					subClass.setSp(rs.getInt("sp"));
 					subClass.setClassIndex(rs.getInt("class_index"));
 					

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -19,9 +19,10 @@
 package com.l2jserver.gameserver.model.actor.tasks.character;
 
 import com.l2jserver.gameserver.model.L2Object;
+import com.l2jserver.gameserver.model.Location;
 import com.l2jserver.gameserver.model.actor.L2Character;
-import com.l2jserver.gameserver.model.skills.Skill;
 import com.l2jserver.gameserver.network.serverpackets.FlyToLocation;
+import com.l2jserver.gameserver.network.serverpackets.FlyToLocation.FlyType;
 
 /**
  * Task dedicated to fly a player to the location
@@ -30,14 +31,14 @@ import com.l2jserver.gameserver.network.serverpackets.FlyToLocation;
 public final class FlyToLocationTask implements Runnable
 {
 	private final L2Character _character;
-	private final L2Object _target;
-	private final Skill _skill;
+	private final Location _targetLocation;
+	private final FlyType _type;
 	
-	public FlyToLocationTask(L2Character character, L2Object target, Skill skill)
+	public FlyToLocationTask(L2Character character, L2Object target, FlyType type)
 	{
 		_character = character;
-		_target = target;
-		_skill = skill;
+		_targetLocation = target.getLocation();
+		_type = type;
 	}
 	
 	@Override
@@ -45,8 +46,8 @@ public final class FlyToLocationTask implements Runnable
 	{
 		if (_character != null)
 		{
-			_character.broadcastPacket(new FlyToLocation(_character, _target, _skill.getFlyType()));
-			_character.setXYZ(_target.getX(), _target.getY(), _target.getZ());
+			_character.broadcastPacket(new FlyToLocation(_character, _targetLocation, _type));
+			_character.setLocation(_targetLocation);
 		}
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -19,13 +19,22 @@
 package com.l2jserver.gameserver.handler;
 
 /**
+ * Handler Interface.
  * @author UnAfraid
+ * @author Zoey76
  * @param <K>
  * @param <V>
  */
 public interface IHandler<K, V>
 {
-	public void registerHandler(K handler);
+	@SuppressWarnings("unchecked")
+	default void registerByClass(Class<?> clazz) throws Exception
+	{
+		final Object object = clazz.getDeclaredConstructor().newInstance();
+		registerHandler((K) object);
+	}
+	
+	public void registerHandler(K object);
 	
 	public void removeHandler(K handler);
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2017 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -104,7 +104,7 @@ public class HennaDAOMySQLImpl implements HennaDAO
 			PreparedStatement ps = con.prepareStatement(DELETE_ONE))
 		{
 			ps.setInt(1, player.getObjectId());
-			ps.setInt(2, slot + 1);
+			ps.setInt(2, slot);
 			ps.setInt(3, player.getClassIndex());
 			ps.execute();
 		}

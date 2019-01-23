@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -300,7 +300,7 @@ public class NpcData implements IXmlReader
 												}
 												break;
 											}
-											case "hitTime":
+											case "hittime":
 												set.set("hitTime", npcNode.getTextContent());// TODO: Implement me default 600 (value in ms)
 												break;
 										}
@@ -386,7 +386,7 @@ public class NpcData implements IXmlReader
 												set.set("longRangeSkillChance", parseInteger(attrs, "longRangeChance"));
 												break;
 											}
-											case "clanList":
+											case "clanlist":
 											{
 												for (Node clanListNode = aiNode.getFirstChild(); clanListNode != null; clanListNode = clanListNode.getNextSibling())
 												{
@@ -402,7 +402,7 @@ public class NpcData implements IXmlReader
 															clans.add(getOrCreateClanId(clanListNode.getTextContent()));
 															break;
 														}
-														case "ignoreNpcId":
+														case "ignorenpcid":
 														{
 															if (ignoreClanNpcIds == null)
 															{
@@ -543,16 +543,16 @@ public class NpcData implements IXmlReader
 									}
 									else
 									{
-										if (skill.hasEffectType(L2EffectType.DISPEL, L2EffectType.DISPEL_BY_SLOT))
+										if (skill.hasEffectType(L2EffectType.DISPEL))
 										{
 											aiSkillScopes.add(AISkillScope.NEGATIVE);
 											aiSkillScopes.add(shortOrLongRangeScope);
 										}
-										else if (skill.hasEffectType(L2EffectType.HEAL))
+										else if (skill.hasEffectType(L2EffectType.HP))
 										{
 											aiSkillScopes.add(AISkillScope.HEAL);
 										}
-										else if (skill.hasEffectType(L2EffectType.PHYSICAL_ATTACK, L2EffectType.PHYSICAL_ATTACK_HP_LINK, L2EffectType.MAGICAL_ATTACK, L2EffectType.DEATH_LINK, L2EffectType.HP_DRAIN))
+										else if (skill.hasEffectType(L2EffectType.PHYSICAL_ATTACK, L2EffectType.MAGICAL_ATTACK, L2EffectType.HP_DRAIN))
 										{
 											aiSkillScopes.add(AISkillScope.ATTACK);
 											aiSkillScopes.add(AISkillScope.UNIVERSAL);
@@ -577,7 +577,7 @@ public class NpcData implements IXmlReader
 											aiSkillScopes.add(AISkillScope.IMMOBILIZE);
 											aiSkillScopes.add(shortOrLongRangeScope);
 										}
-										else if (skill.hasEffectType(L2EffectType.DMG_OVER_TIME, L2EffectType.DMG_OVER_TIME_PERCENT))
+										else if (skill.hasEffectType(L2EffectType.DMG_OVER_TIME))
 										{
 											aiSkillScopes.add(shortOrLongRangeScope);
 										}

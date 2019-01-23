@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -169,9 +169,7 @@ public class L2Territory
 				int zmin = _zMin;
 				for (Point p1 : _points)
 				{
-					double dx = p1._x - x;
-					double dy = p1._y - y;
-					double distance = Math.sqrt((dx * dx) + (dy * dy));
+					double distance = Math.hypot(p1._x - x, p1._y - y);
 					if ((curdistance == 0) || (distance < curdistance))
 					{
 						curdistance = distance;

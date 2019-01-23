@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -121,7 +121,6 @@ import com.l2jserver.gameserver.model.skills.Skill;
 import com.l2jserver.gameserver.model.skills.SkillChannelized;
 import com.l2jserver.gameserver.model.skills.SkillChannelizer;
 import com.l2jserver.gameserver.model.skills.targets.L2TargetType;
-import com.l2jserver.gameserver.model.stats.BaseStats;
 import com.l2jserver.gameserver.model.stats.Calculator;
 import com.l2jserver.gameserver.model.stats.Formulas;
 import com.l2jserver.gameserver.model.stats.Stats;
@@ -1067,6 +1066,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 				{
 					if (!isPlayer())
 					{
+						_attackEndTime = System.nanoTime() + TimeUnit.NANOSECONDS.convert(timeAtk, TimeUnit.MILLISECONDS);
 						hitted = doAttackHitSimple(attack, target, timeToHit);
 						break;
 					}
@@ -1167,7 +1167,6 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 	 */
 	private boolean doAttackHitByBow(Attack attack, L2Character target, int sAtk, int reuse)
 	{
-		
 		int damage1 = 0;
 		byte shld1 = 0;
 		boolean crit1 = false;
@@ -1190,7 +1189,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 			crit1 = Formulas.calcCrit(this, target);
 			
 			// Calculate physical damages
-			damage1 = (int) Formulas.calcPhysDam(this, target, null, shld1, crit1, attack.hasSoulshot());
+			damage1 = (int) Formulas.calcPhysDam(this, target, shld1, crit1, attack.hasSoulshot());
 			
 			// Bows Ranged Damage Formula (Damage gradually decreases when 60% or lower than full hit range, and increases when 60% or higher).
 			// full hit range is 500 which is the base bow range, and the 60% of this is 800.
@@ -1259,7 +1258,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 			crit1 = Formulas.calcCrit(this, target);
 			
 			// Calculate physical damages
-			damage1 = (int) Formulas.calcPhysDam(this, target, null, shld1, crit1, attack.hasSoulshot());
+			damage1 = (int) Formulas.calcPhysDam(this, target, shld1, crit1, attack.hasSoulshot());
 		}
 		
 		// Check if the L2Character is a L2PcInstance
@@ -1325,7 +1324,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 			crit1 = Formulas.calcCrit(this, target);
 			
 			// Calculate physical damages of hit 1
-			damage1 = (int) Formulas.calcPhysDam(this, target, null, shld1, crit1, attack.hasSoulshot());
+			damage1 = (int) Formulas.calcPhysDam(this, target, shld1, crit1, attack.hasSoulshot());
 			damage1 /= 2;
 		}
 		
@@ -1339,7 +1338,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 			crit2 = Formulas.calcCrit(this, target);
 			
 			// Calculate physical damages of hit 2
-			damage2 = (int) Formulas.calcPhysDam(this, target, null, shld2, crit2, attack.hasSoulshot());
+			damage2 = (int) Formulas.calcPhysDam(this, target, shld2, crit2, attack.hasSoulshot());
 			damage2 /= 2;
 		}
 		
@@ -1520,7 +1519,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 			crit1 = Formulas.calcCrit(this, target);
 			
 			// Calculate physical damages
-			damage1 = (int) Formulas.calcPhysDam(this, target, null, shld1, crit1, attack.hasSoulshot());
+			damage1 = (int) Formulas.calcPhysDam(this, target, shld1, crit1, attack.hasSoulshot());
 			
 			if (attackpercent != 100)
 			{
@@ -1557,9 +1556,25 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 		beginCast(skill, false);
 	}
 	
+	/**
+	 * SkillHolder version of {@link #doCast(Skill)} method.
+	 */
+	public void doCast(SkillHolder skill)
+	{
+		beginCast(skill.getSkill(), false);
+	}
+	
 	public void doSimultaneousCast(Skill skill)
 	{
 		beginCast(skill, true);
+	}
+	
+	/**
+	 * SkillHolder version of {@link #doSimultaneousCast(Skill)} method.
+	 */
+	public void doSimultaneousCast(SkillHolder skill)
+	{
+		beginCast(skill.getSkill(), true);
 	}
 	
 	public void doCast(Skill skill, L2Character target, L2Object[] targets)
@@ -1642,6 +1657,8 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 			case FRONT_AURA:
 			case BEHIND_AURA:
 			case GROUND:
+			case AURA_FRIENDLY:
+			case AURA_UNDEAD_ENEMY:
 				target = this;
 				break;
 			case SELF:
@@ -1674,7 +1691,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 					return;
 				}
 				
-				if ((skill.isContinuous() && !skill.isDebuff()) || skill.hasEffectType(L2EffectType.CPHEAL, L2EffectType.HEAL))
+				if ((skill.isContinuous() && !skill.isDebuff()) || skill.hasEffectType(L2EffectType.CP, L2EffectType.HP))
 				{
 					doit = true;
 				}
@@ -1783,7 +1800,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 		
 		// Calculate the Reuse Time of the Skill
 		int reuseDelay;
-		if (skill.isStaticReuse() || skill.isStatic())
+		if (skill.isReuseDelayLocked() || skill.isStatic())
 		{
 			reuseDelay = (skill.getReuseDelay());
 		}
@@ -1809,7 +1826,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 		}
 		
 		// Check if this skill consume mp on start casting
-		int initmpcons = getStat().getMpInitialConsume(skill);
+		int initmpcons = getStat().getMpConsume1(skill);
 		if (initmpcons > 0)
 		{
 			getStatus().reduceMp(initmpcons);
@@ -1909,9 +1926,9 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 		}
 		
 		// Before start AI Cast Broadcast Fly Effect is Need
-		if (skill.getFlyType() != null)
+		if (skill.isFlyType())
 		{
-			ThreadPoolManager.getInstance().scheduleEffect(new FlyToLocationTask(this, target, skill), 50);
+			ThreadPoolManager.getInstance().scheduleEffect(new FlyToLocationTask(this, target, FlyType.CHARGE), 50);
 		}
 		
 		MagicUseTask mut = new MagicUseTask(this, targets, skill, (int) skillAnimTime, simultaneously);
@@ -1970,7 +1987,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 	 */
 	public boolean checkDoCastConditions(Skill skill)
 	{
-		if ((skill == null) || isSkillDisabled(skill) || ((skill.getFlyType() == FlyType.CHARGE) && isMovementDisabled()))
+		if ((skill == null) || isSkillDisabled(skill) || (skill.isFlyType() && isMovementDisabled()))
 		{
 			// Send a Server->Client packet ActionFailed to the L2PcInstance
 			sendPacket(ActionFailed.STATIC_PACKET);
@@ -1978,7 +1995,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 		}
 		
 		// Check if the caster has enough MP
-		if (getCurrentMp() < (getStat().getMpConsume(skill) + getStat().getMpInitialConsume(skill)))
+		if (getCurrentMp() < (getStat().getMpConsume1(skill) + getStat().getMpConsume2(skill)))
 		{
 			// Send a System Message to the caster
 			sendPacket(SystemMessageId.NOT_ENOUGH_MP);
@@ -4285,7 +4302,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 		double dx = (x - curX);
 		double dy = (y - curY);
 		double dz = (z - curZ);
-		double distance = Math.sqrt((dx * dx) + (dy * dy));
+		double distance = Math.hypot(dx, dy);
 		
 		final boolean verticalMovementOnly = isFlying() && (distance == 0) && (dz != 0);
 		if (verticalMovementOnly)
@@ -4304,7 +4321,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 			dx = (x - curX);
 			dy = (y - curY);
 			dz = (z - curZ);
-			distance = Math.sqrt((dx * dx) + (dy * dy));
+			distance = Math.hypot(dx, dy);
 		}
 		
 		// @formatter:off
@@ -4430,7 +4447,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 				dx = x - curX;
 				dy = y - curY;
 				dz = z - curZ;
-				distance = verticalMovementOnly ? Math.abs(dz * dz) : Math.sqrt((dx * dx) + (dy * dy));
+				distance = verticalMovementOnly ? Math.pow(dz, 2) : Math.hypot(dx, dy);
 			}
 			// Pathfinding checks. Only when geodata setting is 2, the LoS check gives shorter result
 			// than the original movement was and the LoS gives a shorter distance than 2000
@@ -4495,7 +4512,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 						dx = x - curX;
 						dy = y - curY;
 						dz = z - curZ;
-						distance = verticalMovementOnly ? Math.abs(dz * dz) : Math.sqrt((dx * dx) + (dy * dy));
+						distance = verticalMovementOnly ? Math.pow(dz, 2) : Math.hypot(dx, dy);
 						sin = dy / distance;
 						cos = dx / distance;
 					}
@@ -4516,7 +4533,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 		// Apply Z distance for flying or swimming for correct timing calculations
 		if ((isFlying() || isInsideZone(ZoneId.WATER)) && !verticalMovementOnly)
 		{
-			distance = Math.sqrt((distance * distance) + (dz * dz));
+			distance = Math.hypot(distance, dz);
 		}
 		
 		// Caclulate the Nb of ticks between the current position and the destination
@@ -4600,9 +4617,8 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 			m._yDestination = md.geoPath.get(m.onGeodataPathIndex).getY();
 			m._zDestination = md.geoPath.get(m.onGeodataPathIndex).getZ();
 		}
-		double dx = (m._xDestination - super.getX());
-		double dy = (m._yDestination - super.getY());
-		double distance = Math.sqrt((dx * dx) + (dy * dy));
+		
+		double distance = Math.hypot(m._xDestination - super.getX(), m._yDestination - super.getY());
 		// Calculate and set the heading of the L2Character
 		if (distance != 0)
 		{
@@ -4859,12 +4875,26 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 			
 			// reduce targets HP
 			target.reduceCurrentHp(damage, this, null);
-			target.notifyDamageReceived(damage, this, null, crit, false);
+			target.notifyDamageReceived(damage, this, null, crit, false, false);
 			
 			if (reflectedDamage > 0)
 			{
+				if (target.isPlayable())
+				{
+					SystemMessage sm = SystemMessage.getSystemMessage(SystemMessageId.C1_DONE_S3_DAMAGE_TO_C2);
+					sm.addCharName(target).addCharName(this).addInt(reflectedDamage);
+					target.sendPacket(sm);
+				}
+				
+				if (this.isSummon())
+				{
+					SystemMessage sm = SystemMessage.getSystemMessage(SystemMessageId.C1_RECEIVED_DAMAGE_OF_S3_FROM_C2);
+					sm.addCharName(this).addCharName(target).addInt(reflectedDamage);
+					this.getActingPlayer().sendPacket(sm);
+				}
+				
 				reduceCurrentHp(reflectedDamage, target, true, false, null);
-				notifyDamageReceived(reflectedDamage, target, null, crit, false);
+				notifyDamageReceived(reflectedDamage, target, null, crit, false, true);
 			}
 			
 			if (!isBow) // Do not absorb if weapon is of type bow
@@ -4898,7 +4928,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 					
 					if (absorbDamage > maxCanAbsorb)
 					{
-						absorbDamage = maxCanAbsorb; // Can't absord more than max hp
+						absorbDamage = maxCanAbsorb; // Can't absorb more than max hp
 					}
 					
 					if (absorbDamage > 0)
@@ -5206,6 +5236,11 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 			if (oldSkill != null)
 			{
 				removeStatsOwner(oldSkill);
+				
+				if (oldSkill.isPassive())
+				{
+					stopSkillEffects(false, oldSkill.getId());
+				}
 			}
 			// Add Func objects of newSkill to the calculator set of the L2Character
 			addStatFuncs(newSkill.getStatFuncs(null, this));
@@ -5321,8 +5356,8 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 	 * Manage the magic skill launching task (MP, HP, Item consumation...) and display the magic skill animation on client.<br>
 	 * <B><U>Actions</U>:</B>
 	 * <ul>
-	 * <li>Send a Server->Client packet MagicSkillLaunched (to display magic skill animation) to all L2PcInstance of L2Charcater _knownPlayers</li>
-	 * <li>Consumme MP, HP and Item if necessary</li>
+	 * <li>Send a Server->Client packet MagicSkillLaunched (to display magic skill animation) to all L2PcInstance of L2Character _knownPlayers</li>
+	 * <li>Consume MP, HP and Item if necessary</li>
 	 * <li>Send a Server->Client packet StatusUpdate with MP modification to the L2PcInstance</li>
 	 * <li>Launch the magic skill in order to calculate its effects</li>
 	 * <li>If the skill type is PDAM, notify the AI of the target with AI_INTENTION_ATTACK</li>
@@ -5351,6 +5386,8 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 				case FRONT_AURA:
 				case BEHIND_AURA:
 				case AURA_CORPSE_MOB:
+				case AURA_FRIENDLY:
+				case AURA_UNDEAD_ENEMY:
 					break;
 				default:
 					abortCast();
@@ -5386,7 +5423,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 					}
 					
 					// Healing party members should ignore LOS.
-					if (((skill.getTargetType() != L2TargetType.PARTY) || !skill.hasEffectType(L2EffectType.HEAL)) //
+					if (((skill.getTargetType() != L2TargetType.PARTY) || !skill.hasEffectType(L2EffectType.HP)) //
 						&& !GeoData.getInstance().canSeeTarget(this, target))
 					{
 						skipLOS++;
@@ -5508,18 +5545,18 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 			boolean isSendStatus = false;
 			
 			// Consume MP of the L2Character and Send the Server->Client packet StatusUpdate with current HP and MP to all other L2PcInstance to inform
-			double mpConsume = getStat().getMpConsume(skill);
+			double mpConsume2 = getStat().getMpConsume2(skill);
 			
-			if (mpConsume > 0)
+			if (mpConsume2 > 0)
 			{
-				if (mpConsume > getCurrentMp())
+				if (mpConsume2 > getCurrentMp())
 				{
 					sendPacket(SystemMessageId.NOT_ENOUGH_MP);
 					abortCast();
 					return;
 				}
 				
-				getStatus().reduceMp(mpConsume);
+				getStatus().reduceMp(mpConsume2);
 				su.addAttribute(StatusUpdate.CUR_MP, (int) getCurrentMp());
 				isSendStatus = true;
 			}
@@ -5554,16 +5591,6 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 				if (skill.getChargeConsume() > 0)
 				{
 					getActingPlayer().decreaseCharges(skill.getChargeConsume());
-				}
-				
-				// Consume Souls if necessary
-				if (skill.getMaxSoulConsumeCount() > 0)
-				{
-					if (!getActingPlayer().decreaseSouls(skill.getMaxSoulConsumeCount(), skill))
-					{
-						abortCast();
-						return;
-					}
 				}
 			}
 			
@@ -5778,7 +5805,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 					{
 						if (skill.getEffectPoint() <= 0)
 						{
-							if ((target.isPlayable() || target.isTrap()) && skill.isBad())
+							if (target.isPlayable() || target.isTrap())
 							{
 								// Casted on target_self but don't harm self
 								if (!target.equals(this))
@@ -5799,7 +5826,7 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 									
 									// attack of the own pet does not flag player
 									// triggering trap not flag trap owner
-									if ((player.getSummon() != target) && !isTrap() && !((skill.getEffectPoint() == 0) && (skill.getAffectRange() > 0)))
+									if ((player.getSummon() != target) && !isTrap() && skill.isBad())
 									{
 										player.updatePvPStatus((L2Character) target);
 									}
@@ -6081,6 +6108,16 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 	 */
 	public abstract int getLevel();
 	
+	/**
+	 * Check minimum level what creature can be.<BR>
+	 * {@link L2PetInstance} use it, some pet cannot drop under specific level.
+	 * @return Minimum level what can be current Character.
+	 */
+	public int getMinLevel()
+	{
+		return 1;
+	}
+	
 	public final double calcStat(Stats stat, double init)
 	{
 		return getStat().calcStat(stat, init, null, null);
@@ -6326,6 +6363,16 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 		getStatus().setCurrentHp(newHp);
 	}
 	
+	public final int getHpPercentage()
+	{
+		return (int) ((getCurrentHp() / getMaxHp()) * 100.0);
+	}
+	
+	public final int getMpPercentage()
+	{
+		return (int) ((getCurrentMp() / getMaxMp()) * 100.0);
+	}
+	
 	public final void setCurrentHpMp(double newHp, double newMp)
 	{
 		getStatus().setCurrentHpMp(newHp, newMp);
@@ -6346,22 +6393,11 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 	 */
 	public int getMaxLoad()
 	{
-		if (isPlayer() || isPet())
-		{
-			// Weight Limit = (CON Modifier*69000) * Skills
-			// Source http://l2p.bravehost.com/weightlimit.html (May 2007)
-			double baseLoad = Math.floor(BaseStats.CON.calcBonus(this) * 69000 * Config.ALT_WEIGHT_LIMIT);
-			return (int) calcStat(Stats.WEIGHT_LIMIT, baseLoad, this, null);
-		}
 		return 0;
 	}
 	
 	public int getBonusWeightPenalty()
 	{
-		if (isPlayer() || isPet())
-		{
-			return (int) calcStat(Stats.WEIGHT_PENALTY, 1, this, null);
-		}
 		return 0;
 	}
 	
@@ -6370,10 +6406,6 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 	 */
 	public int getCurrentLoad()
 	{
-		if (isPlayer() || isPet())
-		{
-			return getInventory().getTotalWeight();
-		}
 		return 0;
 	}
 	
@@ -6678,10 +6710,10 @@ public abstract class L2Character extends L2Object implements ISkillsHolder, IDe
 	 * @param critical
 	 * @param damageOverTime
 	 */
-	public void notifyDamageReceived(double damage, L2Character attacker, Skill skill, boolean critical, boolean damageOverTime)
+	public void notifyDamageReceived(double damage, L2Character attacker, Skill skill, boolean critical, boolean damageOverTime, boolean isReflect)
 	{
-		EventDispatcher.getInstance().notifyEventAsync(new OnCreatureDamageReceived(attacker, this, damage, skill, critical, damageOverTime), this);
-		EventDispatcher.getInstance().notifyEventAsync(new OnCreatureDamageDealt(attacker, this, damage, skill, critical, damageOverTime), attacker);
+		EventDispatcher.getInstance().notifyEventAsync(new OnCreatureDamageReceived(attacker, this, damage, skill, critical, damageOverTime, isReflect), this);
+		EventDispatcher.getInstance().notifyEventAsync(new OnCreatureDamageDealt(attacker, this, damage, skill, critical, damageOverTime, isReflect), attacker);
 	}
 	
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -22,7 +22,6 @@ import com.l2jserver.Config;
 import com.l2jserver.gameserver.enums.Race;
 import com.l2jserver.gameserver.model.actor.templates.L2NpcTemplate;
 import com.l2jserver.gameserver.model.base.PlayerClass;
-import com.l2jserver.gameserver.model.quest.QuestState;
 
 public final class L2VillageMasterKamaelInstance extends L2VillageMasterInstance
 {
@@ -55,25 +54,7 @@ public final class L2VillageMasterKamaelInstance extends L2VillageMasterInstance
 	@Override
 	protected final boolean checkQuests(L2PcInstance player)
 	{
-		// Noble players can add subbclasses without quests
-		if (player.isNoble())
-		{
-			return true;
-		}
-		
-		QuestState qs = player.getQuestState("Q00234_FatesWhisper");
-		if ((qs == null) || !qs.isCompleted())
-		{
-			return false;
-		}
-		
-		qs = player.getQuestState("Q00236_SeedsOfChaos");
-		if ((qs == null) || !qs.isCompleted())
-		{
-			return false;
-		}
-		
-		return true;
+		return player.isNoble() || player.hasQuestCompleted("Q00234_FatesWhisper") || player.hasQuestCompleted("Q00236_SeedsOfChaos");
 	}
 	
 	@Override

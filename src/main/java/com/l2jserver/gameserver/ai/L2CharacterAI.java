@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -1019,7 +1019,7 @@ public class L2CharacterAI extends AbstractAI
 			double dx = worldPosition.getX() - x;
 			double dy = worldPosition.getY() - y;
 			
-			double dist = Math.sqrt((dx * dx) + (dy * dy));
+			double dist = Math.hypot(dx, dy);
 			
 			double sin = dy / dist;
 			double cos = dx / dist;
@@ -1341,11 +1341,11 @@ public class L2CharacterAI extends AbstractAI
 					continue;
 				}
 				
-				if (sk.hasEffectType(L2EffectType.DISPEL, L2EffectType.DISPEL_BY_SLOT))
+				if (sk.hasEffectType(L2EffectType.DISPEL))
 				{
 					cancelSkills.add(sk);
 				}
-				else if (sk.hasEffectType(L2EffectType.HEAL))
+				else if (sk.hasEffectType(L2EffectType.HP))
 				{
 					healSkills.add(sk);
 					hasHealOrResurrect = true;
@@ -1509,7 +1509,7 @@ public class L2CharacterAI extends AbstractAI
 	
 	public boolean canAura(Skill sk)
 	{
-		if ((sk.getTargetType() == L2TargetType.AURA) || (sk.getTargetType() == L2TargetType.BEHIND_AURA) || (sk.getTargetType() == L2TargetType.FRONT_AURA) || (sk.getTargetType() == L2TargetType.AURA_CORPSE_MOB))
+		if ((sk.getTargetType() == L2TargetType.AURA) || (sk.getTargetType() == L2TargetType.BEHIND_AURA) || (sk.getTargetType() == L2TargetType.FRONT_AURA) || (sk.getTargetType() == L2TargetType.AURA_CORPSE_MOB) || (sk.getTargetType() == L2TargetType.AURA_UNDEAD_ENEMY))
 		{
 			for (L2Object target : _actor.getKnownList().getKnownCharactersInRadius(sk.getAffectRange()))
 			{
@@ -1524,9 +1524,9 @@ public class L2CharacterAI extends AbstractAI
 	
 	public boolean canAOE(Skill sk)
 	{
-		if (sk.hasEffectType(L2EffectType.DISPEL, L2EffectType.DISPEL_BY_SLOT))
+		if (sk.hasEffectType(L2EffectType.DISPEL))
 		{
-			if ((sk.getTargetType() == L2TargetType.AURA) || (sk.getTargetType() == L2TargetType.BEHIND_AURA) || (sk.getTargetType() == L2TargetType.FRONT_AURA) || (sk.getTargetType() == L2TargetType.AURA_CORPSE_MOB))
+			if ((sk.getTargetType() == L2TargetType.AURA) || (sk.getTargetType() == L2TargetType.BEHIND_AURA) || (sk.getTargetType() == L2TargetType.FRONT_AURA) || (sk.getTargetType() == L2TargetType.AURA_CORPSE_MOB) || (sk.getTargetType() == L2TargetType.AURA_UNDEAD_ENEMY))
 			{
 				boolean cancast = true;
 				for (L2Character target : _actor.getKnownList().getKnownCharactersInRadius(sk.getAffectRange()))
@@ -1587,7 +1587,7 @@ public class L2CharacterAI extends AbstractAI
 		}
 		else
 		{
-			if ((sk.getTargetType() == L2TargetType.AURA) || (sk.getTargetType() == L2TargetType.BEHIND_AURA) || (sk.getTargetType() == L2TargetType.FRONT_AURA) || (sk.getTargetType() == L2TargetType.AURA_CORPSE_MOB))
+			if ((sk.getTargetType() == L2TargetType.AURA) || (sk.getTargetType() == L2TargetType.BEHIND_AURA) || (sk.getTargetType() == L2TargetType.FRONT_AURA) || (sk.getTargetType() == L2TargetType.AURA_CORPSE_MOB) || (sk.getTargetType() == L2TargetType.AURA_UNDEAD_ENEMY))
 			{
 				boolean cancast = false;
 				for (L2Character target : _actor.getKnownList().getKnownCharactersInRadius(sk.getAffectRange()))

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2017 L2J Server
+ * Copyright (C) 2004-2018 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -29,7 +29,6 @@ import com.l2jserver.commons.database.pool.impl.ConnectionFactory;
 import com.l2jserver.gameserver.dao.PetDAO;
 import com.l2jserver.gameserver.data.xml.impl.PetDataTable;
 import com.l2jserver.gameserver.model.L2PetLevelData;
-import com.l2jserver.gameserver.model.actor.instance.L2BabyPetInstance;
 import com.l2jserver.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jserver.gameserver.model.actor.instance.L2PetInstance;
 import com.l2jserver.gameserver.model.actor.templates.L2NpcTemplate;
@@ -98,26 +97,10 @@ public class PetDAOMySQLImpl implements PetDAO
 				L2PetInstance pet;
 				if (!rset.next())
 				{
-					if (template.isType("L2BabyPet"))
-					{
-						pet = new L2BabyPetInstance(template, owner, control);
-					}
-					else
-					{
-						pet = new L2PetInstance(template, owner, control);
-					}
-					return pet;
+					return new L2PetInstance(template, owner, control);
 				}
 				
-				if (template.isType("L2BabyPet"))
-				{
-					pet = new L2BabyPetInstance(template, owner, control, rset.getByte("level"));
-				}
-				else
-				{
-					pet = new L2PetInstance(template, owner, control, rset.getByte("level"));
-				}
-				
+				pet = new L2PetInstance(template, owner, control, rset.getByte("level"));
 				pet.setRespawned(true);
 				pet.setName(rset.getString("name"));
 				
@@ -130,8 +113,8 @@ public class PetDAOMySQLImpl implements PetDAO
 					exp = info.getPetMaxExp();
 				}
 				
-				pet.getStat().setExp(exp);
-				pet.getStat().setSp(rset.getInt("sp"));
+				pet.setExp(exp);
+				pet.setSp(rset.getInt("sp"));
 				
 				pet.getStatus().setCurrentHp(rset.getInt("curHp"));
 				pet.getStatus().setCurrentMp(rset.getInt("curMp"));
@@ -171,11 +154,11 @@ public class PetDAOMySQLImpl implements PetDAO
 			PreparedStatement ps = con.prepareStatement(query))
 		{
 			ps.setString(1, pet.getName());
-			ps.setInt(2, pet.getStat().getLevel());
+			ps.setInt(2, pet.getLevel());
 			ps.setDouble(3, pet.getStatus().getCurrentHp());
 			ps.setDouble(4, pet.getStatus().getCurrentMp());
-			ps.setLong(5, pet.getStat().getExp());
-			ps.setInt(6, pet.getStat().getSp());
+			ps.setLong(5, pet.getExp());
+			ps.setInt(6, pet.getSp());
 			ps.setInt(7, pet.getCurrentFed());
 			ps.setInt(8, pet.getOwner().getObjectId());
 			ps.setString(9, String.valueOf(pet.isRestoreSummon())); // True restores pet on login
