@@ -1,4 +1,4 @@
-image: java:8
+image: coeps/8-jdk-jfx
 
 pipelines:
   default:

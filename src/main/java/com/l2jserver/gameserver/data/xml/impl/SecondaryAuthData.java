@@ -25,6 +25,7 @@ import java.util.Set;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import com.l2jserver.Config;
 import com.l2jserver.util.data.xml.IXmlReader;
 
 /**
@@ -48,8 +49,12 @@ public class SecondaryAuthData implements IXmlReader
 	public synchronized void load()
 	{
 		_forbiddenPasswords.clear();
-		parseFile(new File("config/SecondaryAuth.xml"));
-		LOG.info("{}: Loaded {} forbidden passwords.", getClass().getSimpleName(), _forbiddenPasswords.size());
+		File f = Config.getFileOfConfigFile(Config.SECONDARY_AUTH_FILE, "Secondary auth stays disabled!");
+		if (f != null)
+		{
+			parseFile(f);
+			LOG.info("{}: Loaded {} forbidden passwords.", getClass().getSimpleName(), _forbiddenPasswords.size());
+		}
 	}
 	
 	@Override

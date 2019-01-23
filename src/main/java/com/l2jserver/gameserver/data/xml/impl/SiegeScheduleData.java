@@ -18,6 +18,7 @@
  */
 package com.l2jserver.gameserver.data.xml.impl;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -26,6 +27,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+import com.l2jserver.Config;
 import com.l2jserver.gameserver.model.SiegeScheduleDate;
 import com.l2jserver.gameserver.model.StatsSet;
 import com.l2jserver.gameserver.util.Util;
@@ -48,8 +50,12 @@ public class SiegeScheduleData implements IXmlReader
 	public synchronized void load()
 	{
 		_scheduleData.clear();
-		parseDatapackFile("config/SiegeSchedule.xml");
-		LOG.info("{}: Loaded: {} siege schedulers.", getClass().getSimpleName(), _scheduleData.size());
+		File f = Config.getFileOfConfigFile(Config.SIEGE_SCHEDULE_FILE, "Using emergency siege schedule data.");
+		if (f != null)
+		{
+			parseFile(f);
+			LOG.info("{}: Loaded: {} siege schedulers.", getClass().getSimpleName(), _scheduleData.size());
+		}
 		if (_scheduleData.isEmpty())
 		{
 			_scheduleData.add(new SiegeScheduleDate(new StatsSet()));

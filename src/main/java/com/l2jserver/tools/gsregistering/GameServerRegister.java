@@ -39,7 +39,7 @@ public class GameServerRegister extends BaseGameServerRegister
 	}
 	
 	/**
-	 * @param bundle
+	 * @param bundle the resource bundle
 	 */
 	public GameServerRegister(ResourceBundle bundle)
 	{
@@ -177,9 +177,6 @@ public class GameServerRegister extends BaseGameServerRegister
 		}
 	}
 	
-	/**
-	 * @throws IOException
-	 */
 	private void unregisterAllGS() throws IOException
 	{
 		if (yesNoQuestion(getBundle().getString("confirmRemoveAllText")))

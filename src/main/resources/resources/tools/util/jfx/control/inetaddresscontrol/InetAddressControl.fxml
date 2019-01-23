@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.l2jserver.tools.util.jfx.control.ipvfourcontrol.IpvFourControl?>
+<?import com.l2jserver.tools.util.jfx.control.ipvsixcontrol.IpvSixControl?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<fx:root maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" spacing="3.0" type="HBox" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" HBox.hgrow="ALWAYS">
+         <children>
+            <IpvFourControl fx:id="_ipvFourControl" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" VBox.vgrow="ALWAYS" />
+            <IpvSixControl fx:id="_ipvSixControl" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" VBox.vgrow="ALWAYS" />
+            <TextField fx:id="_hostnameControl" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" promptText="%Hostname" VBox.vgrow="ALWAYS" />
+         </children></VBox>
+      <HBox fx:id="_inTypeChoiceBox" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="-Infinity" spacing="3.0" HBox.hgrow="NEVER">
+         <children>
+            <RadioButton fx:id="_inTypeChoiceFour" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="-Infinity" mnemonicParsing="false" selected="true" text="IPv4" HBox.hgrow="NEVER">
+               <toggleGroup>
+                  <ToggleGroup fx:id="_inTypeChoiceGroup" />
+               </toggleGroup>
+            </RadioButton>
+            <RadioButton fx:id="_inTypeChoiceSix" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="-Infinity" mnemonicParsing="false" text="IPv6" toggleGroup="$_inTypeChoiceGroup" HBox.hgrow="NEVER" />
+            <RadioButton fx:id="_inTypeChoiceHostname" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="-Infinity" mnemonicParsing="false" text="%Hostname" toggleGroup="$_inTypeChoiceGroup" HBox.hgrow="NEVER" />
+         </children>
+      </HBox>
+   </children>
+</fx:root>

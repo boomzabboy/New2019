@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.BorderPane?>
+
+<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="768.0" minWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.l2jserver.tools.configurator.frontend.jfx.stage.mainstage.MainStageController">
+   <top>
+      <MenuBar BorderPane.alignment="CENTER">
+         <menus>
+            <Menu mnemonicParsing="false" text="%MenuFile">
+              <items>
+                  <MenuItem fx:id="_menuFileLoad" mnemonicParsing="false" onAction="#onMenuFileLoad" text="%MenuFileLoad" />
+                <MenuItem fx:id="_menuFileSave" mnemonicParsing="false" onAction="#onMenuFileSave" text="%MenuFileSave" />
+                  <MenuItem fx:id="_menuFileQuit" mnemonicParsing="false" onAction="#onMenuFileQuit" text="%MenuFileQuit" />
+              </items>
+            </Menu>
+            <Menu mnemonicParsing="false" text="%MenuHelp">
+               <items>
+                  <MenuItem fx:id="_menuHelpAbout" mnemonicParsing="false" onAction="#onMenuHelpAbout" text="%MenuHelpAbout" />
+               </items>
+            </Menu>
+         </menus>
+      </MenuBar>
+   </top>
+   <center>
+      <TabPane fx:id="_tabsConfigurations" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER" />
+   </center>
+</BorderPane>

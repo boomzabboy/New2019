@@ -1,4 +1,4 @@
-box: openjdk
+box: coeps/8-jdk-jfx
 
 dev:
   steps:

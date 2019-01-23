@@ -1,0 +1,15 @@
+This is your servers configuration folder. 
+
+All the configuration files inside the ./config/default/ folder are the
+original default configuration files. The default configuration files should
+never be changed.
+
+To change a config directive from a file inside ./config/default/, create a
+file with the same name inside the ./config/ folder and only put the configs
+directives inside it which you want to change.
+
+For file formats other than .properties, you need to create a complete
+configuration file to overwrite the default.
+
+This construct enables you to just overwrite with a new server version without
+overwriting your custom configurations.

@@ -1,0 +1,3 @@
+-Dpython.cachedir=../cachedir
+-Xms1024m
+-Xmx1792m

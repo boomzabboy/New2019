@@ -360,13 +360,13 @@ public final class Rnd
 		{
 			case UNSECURE_ATOMIC:
 				return new RandomContainer(new Random());
-				
+			
 			case UNSECURE_VOLATILE:
 				return new RandomContainer(new NonAtomicRandom());
-				
+			
 			case UNSECURE_THREAD_LOCAL:
 				return new RandomContainer(new ThreadLocalRandom());
-				
+			
 			case SECURE:
 				return new RandomContainer(new SecureRandom());
 		}
@@ -435,8 +435,8 @@ public final class Rnd
 	}
 	
 	/**
-	 * @param n
-	 * @return
+	 * @param n The superior limit (exclusive)
+	 * @return the next integer
 	 * @see com.l2jserver.util.Rnd#get(int n)
 	 */
 	public static final int nextInt(final int n)
@@ -452,5 +452,15 @@ public final class Rnd
 	public static final long nextLong()
 	{
 		return rnd.nextLong();
+	}
+	
+	/**
+	 * @param <T> the element type
+	 * @param array the array to pick a random element from
+	 * @return A random element in this array
+	 */
+	public static <T> T randomElement(T[] array)
+	{
+		return array[Rnd.get(array.length)];
 	}
 }

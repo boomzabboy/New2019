@@ -20,7 +20,6 @@ package com.l2jserver;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -38,6 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -82,35 +82,43 @@ public final class Config
 	// Constants
 	// --------------------------------------------------
 	public static final String EOL = System.lineSeparator();
+	public static final Path CONFIG_FOLDER = Paths.get("config");
+	public static final Path CONFIG_DEFAULT_FOLDER = CONFIG_FOLDER.resolve("default");
+	public static final Path CONFIG_OVERWRITE_FOLDER = CONFIG_FOLDER;
+	public static final Path CONFIG_GENERATED_FOLDER = CONFIG_FOLDER;
 	
 	// --------------------------------------------------
-	// L2J Property File Definitions
+	// L2J Config File Names
 	// --------------------------------------------------
-	public static final String CHARACTER_CONFIG_FILE = "./config/Character.properties";
-	public static final String FEATURE_CONFIG_FILE = "./config/Feature.properties";
-	public static final String FORTSIEGE_CONFIGURATION_FILE = "./config/FortSiege.properties";
-	public static final String GENERAL_CONFIG_FILE = "./config/General.properties";
-	public static final String HEXID_FILE = "./config/hexid.txt";
-	public static final String ID_CONFIG_FILE = "./config/IdFactory.properties";
-	public static final String L2JMOD_CONFIG_FILE = "./config/L2JMods.properties";
-	public static final String LOGIN_CONFIGURATION_FILE = "./config/LoginServer.properties";
-	public static final String NPC_CONFIG_FILE = "./config/NPC.properties";
-	public static final String PVP_CONFIG_FILE = "./config/PVP.properties";
-	public static final String RATES_CONFIG_FILE = "./config/Rates.properties";
-	public static final String CONFIGURATION_FILE = "./config/Server.properties";
-	public static final String IP_CONFIG_FILE = "./config/ipconfig.xml";
-	public static final String SIEGE_CONFIGURATION_FILE = "./config/Siege.properties";
-	public static final String TW_CONFIGURATION_FILE = "./config/TerritoryWar.properties";
-	public static final String TELNET_FILE = "./config/Telnet.properties";
-	public static final String FLOOD_PROTECTOR_FILE = "./config/FloodProtector.properties";
-	public static final String MMO_CONFIG_FILE = "./config/MMO.properties";
-	public static final String OLYMPIAD_CONFIG_FILE = "./config/Olympiad.properties";
-	public static final String GRANDBOSS_CONFIG_FILE = "./config/GrandBoss.properties";
-	public static final String GRACIASEEDS_CONFIG_FILE = "./config/GraciaSeeds.properties";
-	public static final String CHAT_FILTER_FILE = "./config/chatfilter.txt";
-	public static final String EMAIL_CONFIG_FILE = "./config/Email.properties";
-	public static final String CH_SIEGE_FILE = "./config/ConquerableHallSiege.properties";
-	public static final String GEODATA_FILE = "./config/GeoData.properties";
+	public static final String CHARACTER_CONFIG_FILE = "Character.properties";
+	public static final String FEATURE_CONFIG_FILE = "Feature.properties";
+	public static final String FORTSIEGE_CONFIGURATION_FILE = "FortSiege.properties";
+	public static final String GENERAL_CONFIG_FILE = "General.properties";
+	public static final String HEXID_FILE = "hexid.txt";
+	public static final String ID_CONFIG_FILE = "IdFactory.properties";
+	public static final String L2JMOD_CONFIG_FILE = "L2JMods.properties";
+	public static final String LOGIN_CONFIGURATION_FILE = "LoginServer.properties";
+	public static final String NPC_CONFIG_FILE = "NPC.properties";
+	public static final String PVP_CONFIG_FILE = "PVP.properties";
+	public static final String RATES_CONFIG_FILE = "Rates.properties";
+	public static final String CONFIGURATION_FILE = "Server.properties";
+	public static final String SIEGE_CONFIGURATION_FILE = "Siege.properties";
+	public static final String TW_CONFIGURATION_FILE = "TerritoryWar.properties";
+	public static final String TELNET_FILE = "Telnet.properties";
+	public static final String FLOOD_PROTECTOR_FILE = "FloodProtector.properties";
+	public static final String MMO_CONFIG_FILE = "MMO.properties";
+	public static final String OLYMPIAD_CONFIG_FILE = "Olympiad.properties";
+	public static final String GRANDBOSS_CONFIG_FILE = "GrandBoss.properties";
+	public static final String GRACIASEEDS_CONFIG_FILE = "GraciaSeeds.properties";
+	public static final String EMAIL_CONFIG_FILE = "Email.properties";
+	public static final String CH_SIEGE_FILE = "ConquerableHallSiege.properties";
+	public static final String GEODATA_FILE = "GeoData.properties";
+	// another format than .properties
+	public static final String IP_CONFIG_FILE = "ipconfig.xml";
+	public static final String CHAT_FILTER_FILE = "chatfilter.txt";
+	public static final String BOTREPORT_PUNISHMENTS_FILE = "botreport_punishments.xml";
+	public static final String SECONDARY_AUTH_FILE = "SecondaryAuth.xml";
+	public static final String SIEGE_SCHEDULE_FILE = "SiegeSchedule.xml";
 	// --------------------------------------------------
 	// L2J Variable Definitions
 	// --------------------------------------------------
@@ -171,9 +179,11 @@ public final class Config
 	public static int MAX_EVASION;
 	public static int MIN_ABNORMAL_STATE_SUCCESS_RATE;
 	public static int MAX_ABNORMAL_STATE_SUCCESS_RATE;
+	public static int MAX_PLAYER_LEVEL;
+	public static int MAX_PET_LEVEL;
 	public static byte MAX_SUBCLASS;
-	public static byte BASE_SUBCLASS_LEVEL;
-	public static byte MAX_SUBCLASS_LEVEL;
+	public static int BASE_SUBCLASS_LEVEL;
+	public static int MAX_SUBCLASS_LEVEL;
 	public static int MAX_PVTSTORESELL_SLOTS_DWARF;
 	public static int MAX_PVTSTORESELL_SLOTS_OTHER;
 	public static int MAX_PVTSTOREBUY_SLOTS_DWARF;
@@ -228,7 +238,7 @@ public final class Config
 	public static boolean ALT_LEAVE_PARTY_LEADER;
 	public static boolean INITIAL_EQUIPMENT_EVENT;
 	public static long STARTING_ADENA;
-	public static byte STARTING_LEVEL;
+	public static int STARTING_LEVEL;
 	public static int STARTING_SP;
 	public static long MAX_ADENA;
 	public static boolean AUTO_LOOT;
@@ -1505,9 +1515,11 @@ public final class Config
 			MAX_EVASION = character.getInt("MaxEvasion", 250);
 			MIN_ABNORMAL_STATE_SUCCESS_RATE = character.getInt("MinAbnormalStateSuccessRate", 10);
 			MAX_ABNORMAL_STATE_SUCCESS_RATE = character.getInt("MaxAbnormalStateSuccessRate", 90);
+			MAX_PLAYER_LEVEL = character.getInt("MaxPlayerLevel", 85);
+			MAX_PET_LEVEL = character.getInt("MaxPetLevel", 86);
 			MAX_SUBCLASS = character.getByte("MaxSubclass", (byte) 3);
-			BASE_SUBCLASS_LEVEL = character.getByte("BaseSubclassLevel", (byte) 40);
-			MAX_SUBCLASS_LEVEL = character.getByte("MaxSubclassLevel", (byte) 80);
+			BASE_SUBCLASS_LEVEL = character.getInt("BaseSubclassLevel", 40);
+			MAX_SUBCLASS_LEVEL = character.getInt("MaxSubclassLevel", 80);
 			MAX_PVTSTORESELL_SLOTS_DWARF = character.getInt("MaxPvtStoreSellSlotsDwarf", 4);
 			MAX_PVTSTORESELL_SLOTS_OTHER = character.getInt("MaxPvtStoreSellSlotsOther", 3);
 			MAX_PVTSTOREBUY_SLOTS_DWARF = character.getInt("MaxPvtStoreBuySlotsDwarf", 5);
@@ -1628,7 +1640,7 @@ public final class Config
 			ALT_LEAVE_PARTY_LEADER = character.getBoolean("AltLeavePartyLeader", false);
 			INITIAL_EQUIPMENT_EVENT = character.getBoolean("InitialEquipmentEvent", false);
 			STARTING_ADENA = character.getLong("StartingAdena", 0);
-			STARTING_LEVEL = character.getByte("StartingLevel", (byte) 1);
+			STARTING_LEVEL = character.getInt("StartingLevel", 1);
 			STARTING_SP = character.getInt("StartingSP", 0);
 			MAX_ADENA = character.getLong("MaxAdena", 99900000000L);
 			if (MAX_ADENA < 0)
@@ -2592,31 +2604,31 @@ public final class Config
 			ALT_OLY_ENCHANT_LIMIT = Olympiad.getInt("AltOlyEnchantLimit", -1);
 			ALT_OLY_WAIT_TIME = Olympiad.getInt("AltOlyWaitTime", 120);
 			
-			final File hexIdFile = new File(HEXID_FILE);
-			if (hexIdFile.exists())
+			final Path hexIdFile = Paths.get(HEXID_FILE);
+			if (Files.exists(CONFIG_FOLDER.resolve(hexIdFile)))
 			{
 				final PropertiesParser hexId = new PropertiesParser(hexIdFile);
 				
-				if (hexId.containskey("ServerID") && hexId.containskey("HexID"))
+				if (hexId.containsNonEmptyKey("ServerID") && hexId.containsNonEmptyKey("HexID"))
 				{
 					SERVER_ID = hexId.getInt("ServerID", 1);
 					try
 					{
-						HEX_ID = new BigInteger(hexId.getString("HexID", null), 16).toByteArray();
+						HEX_ID = new BigInteger(hexId.getString("HexID", ""), 16).toByteArray();
 					}
 					catch (Exception e)
 					{
-						LOG.warn("Could not load HexID file ({}). Hopefully login will give us one.", HEXID_FILE);
+						LOG.warn("Could not load HexID file ({})! Failed to convert HexID. Hopefully login will give us one.", HEXID_FILE, e);
 					}
 				}
 				else
 				{
-					LOG.warn("Could not load HexID file ({}). Hopefully login will give us one.", HEXID_FILE);
+					LOG.warn("Could not load HexID file ({})! Missing properties. Hopefully login will give us one.", HEXID_FILE);
 				}
 			}
 			else
 			{
-				LOG.warn("Could not load HexID file ({}). Hopefully login will give us one.", HEXID_FILE);
+				LOG.warn("Could not load HexID file ({}). File is missing. Hopefully login will give us one.", HEXID_FILE);
 			}
 			
 			// Grand bosses
@@ -2655,13 +2667,17 @@ public final class Config
 			
 			try
 			{
-				//@formatter:off
-				FILTER_LIST = Files.lines(Paths.get(CHAT_FILTER_FILE), StandardCharsets.UTF_8)
-					.map(String::trim)
-					.filter(line -> (!line.isEmpty() && (line.charAt(0) != '#')))
-					.collect(Collectors.toList());
-				//@formatter:on
-				LOG.info("Loaded {} filter words.", FILTER_LIST.size());
+				Path chatfilterFile = getPathOfConfigFile(CHAT_FILTER_FILE, "Using empty chatfilter list.");
+				if (chatfilterFile != null)
+				{
+					//@formatter:offconfig
+					FILTER_LIST = Files.lines(chatfilterFile, StandardCharsets.UTF_8)
+						.map(String::trim)
+						.filter(line -> (!line.isEmpty() && (line.charAt(0) != '#')))
+						.collect(Collectors.toList());
+					//@formatter:on
+					LOG.info("Loaded {} filter words.", FILTER_LIST.size());
+				}
 			}
 			catch (IOException ioe)
 			{
@@ -3667,18 +3683,14 @@ public final class Config
 	 */
 	public static void saveHexid(int serverId, String hexId, String fileName)
 	{
-		try
+		Properties hexSetting = new Properties();
+		Path p = CONFIG_GENERATED_FOLDER.resolve(fileName);
+		// Create a new empty file only if it doesn't exist
+		try (OutputStream os = Files.newOutputStream(p, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))
 		{
-			Properties hexSetting = new Properties();
-			File file = new File(fileName);
-			// Create a new empty file only if it doesn't exist
-			file.createNewFile();
-			try (OutputStream out = new FileOutputStream(file))
-			{
-				hexSetting.setProperty("ServerID", String.valueOf(serverId));
-				hexSetting.setProperty("HexID", hexId);
-				hexSetting.store(out, "the hexID to auth into login");
-			}
+			hexSetting.setProperty("ServerID", String.valueOf(serverId));
+			hexSetting.setProperty("HexID", hexId);
+			hexSetting.store(os, "the hexID to auth into login");
 		}
 		catch (Exception e)
 		{
@@ -3912,6 +3924,46 @@ public final class Config
 		return result;
 	}
 	
+	public static Path getPathOfConfigFile(String filename, String missingMessage)
+	{
+		Path p = CONFIG_OVERWRITE_FOLDER.resolve(filename);
+		if (Files.exists(p))
+		{
+			LOG.info("Using overwrite {}.", filename);
+			return p;
+		}
+		
+		p = CONFIG_DEFAULT_FOLDER.resolve(filename);
+		if (Files.exists(p))
+		{
+			LOG.info("Using default {}.", filename);
+			return p;
+		}
+		
+		LOG.warn("{} is missing! {}", missingMessage);
+		return null;
+	}
+	
+	public static File getFileOfConfigFile(String filename, String missingMessage)
+	{
+		File f = new File(CONFIG_OVERWRITE_FOLDER.resolve(filename).toString());
+		if (f.exists())
+		{
+			LOG.info("Using overwrite {}.", filename);
+			return f;
+		}
+		
+		f = new File(CONFIG_DEFAULT_FOLDER.resolve(filename).toString());
+		if (f.exists())
+		{
+			LOG.info("Using default {}.", filename);
+			return f;
+		}
+		
+		LOG.warn("{} is missing! {}", missingMessage);
+		return null;
+	}
+	
 	private static class IPConfigData implements IXmlReader
 	{
 		private static final List<String> _subnets = new ArrayList<>(5);
@@ -3926,16 +3978,13 @@ public final class Config
 		public void load()
 		{
 			GameServer.printSection("Network Configuration");
-			final File f = new File(IP_CONFIG_FILE);
-			if (f.exists())
+			File f = getFileOfConfigFile(IP_CONFIG_FILE, "Using automatic network configuration.");
+			if (f != null)
 			{
-				LOG.info("Using existing ipconfig.xml.");
-				parseFile(new File(IP_CONFIG_FILE));
+				parseFile(f);
 			}
 			else
-			// Auto configuration...
 			{
-				LOG.info("Using automatic network configuration.");
 				autoIpConfig();
 			}
 		}

@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Paths;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.LogManager;
@@ -38,6 +39,7 @@ import com.l2jserver.UPnPService;
 import com.l2jserver.commons.database.pool.impl.ConnectionFactory;
 import com.l2jserver.gameserver.cache.HtmCache;
 import com.l2jserver.gameserver.dao.factory.impl.DAOFactory;
+import com.l2jserver.gameserver.data.json.ExperienceData;
 import com.l2jserver.gameserver.data.sql.impl.AnnouncementsTable;
 import com.l2jserver.gameserver.data.sql.impl.CharNameTable;
 import com.l2jserver.gameserver.data.sql.impl.CharSummonTable;
@@ -58,7 +60,6 @@ import com.l2jserver.gameserver.data.xml.impl.EnchantItemGroupsData;
 import com.l2jserver.gameserver.data.xml.impl.EnchantItemHPBonusData;
 import com.l2jserver.gameserver.data.xml.impl.EnchantItemOptionsData;
 import com.l2jserver.gameserver.data.xml.impl.EnchantSkillGroupsData;
-import com.l2jserver.gameserver.data.xml.impl.ExperienceData;
 import com.l2jserver.gameserver.data.xml.impl.FishData;
 import com.l2jserver.gameserver.data.xml.impl.FishingMonstersData;
 import com.l2jserver.gameserver.data.xml.impl.FishingRodsData;
@@ -71,6 +72,7 @@ import com.l2jserver.gameserver.data.xml.impl.MultisellData;
 import com.l2jserver.gameserver.data.xml.impl.NpcData;
 import com.l2jserver.gameserver.data.xml.impl.OptionData;
 import com.l2jserver.gameserver.data.xml.impl.PetDataTable;
+import com.l2jserver.gameserver.data.xml.impl.PlayerCreationPointData;
 import com.l2jserver.gameserver.data.xml.impl.PlayerTemplateData;
 import com.l2jserver.gameserver.data.xml.impl.PlayerXpPercentLostData;
 import com.l2jserver.gameserver.data.xml.impl.RecipeData;
@@ -143,12 +145,15 @@ import com.l2jserver.mmocore.SelectorThread;
 import com.l2jserver.status.Status;
 import com.l2jserver.util.DeadLockDetector;
 import com.l2jserver.util.IPv4Filter;
+import com.l2jserver.util.Util;
 
 public final class GameServer
 {
 	private static final Logger LOG = LoggerFactory.getLogger(GameServer.class);
 	private static final String LOG_FOLDER = "log"; // Name of folder for log file
 	private static final String LOG_NAME = "./log.cfg"; // Name of log file
+	private static final String DATAPACK = "-dp";
+	private static final String GEODATA = "-gd";
 	
 	private final SelectorThread<L2GameClient> _selectorThread;
 	private final L2GamePacketHandler _gamePacketHandler;
@@ -226,6 +231,7 @@ public final class GameServer
 		KarmaData.getInstance();
 		HitConditionBonusData.getInstance();
 		PlayerTemplateData.getInstance();
+		PlayerCreationPointData.getInstance();
 		CharNameTable.getInstance();
 		AdminData.getInstance();
 		RaidBossPointsManager.getInstance();
@@ -435,7 +441,21 @@ public final class GameServer
 	{
 		Server.serverMode = Server.MODE_GAMESERVER;
 		
-		/*** Main ***/
+		// Initialize configurations.
+		Config.load();
+		
+		final String dp = Util.parseArg(args, DATAPACK, true);
+		if (dp != null)
+		{
+			Config.DATAPACK_ROOT = new File(dp);
+		}
+		
+		final String gd = Util.parseArg(args, GEODATA, true);
+		if (gd != null)
+		{
+			Config.GEODATA_PATH = Paths.get(gd);
+		}
+		
 		// Create log folder
 		File logFolder = new File(Config.DATAPACK_ROOT, LOG_FOLDER);
 		logFolder.mkdir();
@@ -446,8 +466,6 @@ public final class GameServer
 			LogManager.getLogManager().readConfiguration(is);
 		}
 		
-		// Initialize config
-		Config.load();
 		printSection("Database");
 		DAOFactory.getInstance();
 		ConnectionFactory.getInstance();

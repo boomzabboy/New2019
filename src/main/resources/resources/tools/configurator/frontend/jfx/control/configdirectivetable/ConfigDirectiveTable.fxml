@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+
+<fx:root editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" type="TableView" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
+  <columns>
+    <TableColumn fx:id="_nameColumn" editable="false" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" sortable="false" text="%Name" />
+    <TableColumn fx:id="_valueColumn" maxWidth="1.7976931348623157E308" minWidth="624.0" prefWidth="-1.0" sortable="false" text="%Value">
+         <columns>
+            <TableColumn fx:id="_valueCurrentColumn" maxWidth="1.7976931348623157E308" minWidth="312.0" prefWidth="-1.0" sortable="false" text="%CurrentValue" />
+            <TableColumn fx:id="_valueDefaultColumn" editable="false" maxWidth="1.7976931348623157E308" minWidth="312.0" prefWidth="-1.0" sortable="false" text="%DefaultValue" />
+         </columns></TableColumn>
+      <TableColumn fx:id="_overwriteColumn" editable="false" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" resizable="false" sortable="false" text="%Overwrite" />
+      <TableColumn fx:id="_resetColumn" editable="false" maxWidth="1.7976931348623157E308" minWidth="100.0" prefWidth="-1.0" resizable="false" sortable="false" text="%Reset" />
+  </columns>
+</fx:root>

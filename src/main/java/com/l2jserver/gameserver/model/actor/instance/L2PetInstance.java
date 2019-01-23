@@ -55,12 +55,15 @@ import com.l2jserver.gameserver.model.items.L2Item;
 import com.l2jserver.gameserver.model.items.L2Weapon;
 import com.l2jserver.gameserver.model.items.instance.L2ItemInstance;
 import com.l2jserver.gameserver.model.skills.Skill;
+import com.l2jserver.gameserver.model.stats.BaseStats;
+import com.l2jserver.gameserver.model.stats.Stats;
 import com.l2jserver.gameserver.model.zone.ZoneId;
 import com.l2jserver.gameserver.network.SystemMessageId;
 import com.l2jserver.gameserver.network.serverpackets.ActionFailed;
 import com.l2jserver.gameserver.network.serverpackets.ExChangeNpcState;
 import com.l2jserver.gameserver.network.serverpackets.InventoryUpdate;
 import com.l2jserver.gameserver.network.serverpackets.PetInventoryUpdate;
+import com.l2jserver.gameserver.network.serverpackets.SocialAction;
 import com.l2jserver.gameserver.network.serverpackets.StatusUpdate;
 import com.l2jserver.gameserver.network.serverpackets.StopMove;
 import com.l2jserver.gameserver.network.serverpackets.SystemMessage;
@@ -109,7 +112,7 @@ public class L2PetInstance extends L2Summon
 		
 		_controlObjectId = control.getObjectId();
 		
-		getStat().setLevel((byte) Math.max(level, PetDataTable.getInstance().getPetMinLevel(template.getId())));
+		getStat().setLevel(Math.max(level, getMinLevel()));
 		
 		_inventory = new PetInventory(this);
 		_inventory.restore();
@@ -254,7 +257,7 @@ public class L2PetInstance extends L2Summon
 			pet.setTitle(owner.getName());
 			if (data.isSynchLevel() && (pet.getLevel() != owner.getLevel()))
 			{
-				pet.getStat().setLevel((byte) owner.getLevel());
+				pet.getStat().setLevel(owner.getLevel());
 				pet.getStat().setExp(pet.getStat().getExpForLevel(owner.getLevel()));
 			}
 			L2World.getInstance().addPet(owner.getObjectId(), pet);
@@ -929,6 +932,24 @@ public class L2PetInstance extends L2Summon
 	}
 	
 	@Override
+	public int getMaxLoad()
+	{
+		return (int) calcStat(Stats.WEIGHT_LIMIT, Math.floor(BaseStats.CON.calcBonus(this) * 34500 * Config.ALT_WEIGHT_LIMIT), this, null);
+	}
+	
+	@Override
+	public int getBonusWeightPenalty()
+	{
+		return (int) calcStat(Stats.WEIGHT_PENALTY, 1, this, null);
+	}
+	
+	@Override
+	public int getCurrentLoad()
+	{
+		return getInventory().getTotalWeight();
+	}
+	
+	@Override
 	public synchronized void unSummon(L2PcInstance owner)
 	{
 		stopFeed();
@@ -974,20 +995,28 @@ public class L2PetInstance extends L2Summon
 		_expBeforeDeath = getStat().getExp();
 		
 		// Set the new Experience value of the L2PetInstance
-		getStat().addExp(-lostExp);
+		getStat().removeExp(lostExp);
+	}
+	
+	public void addExp(long exp)
+	{
+		getStat().addExp(exp);
+	}
+	
+	public long getExpForLevel(int level)
+	{
+		return getStat().getExpForLevel(level);
 	}
 	
 	@Override
 	public void addExpAndSp(long addToExp, int addToSp)
 	{
-		if (getId() == 12564)
-		{
-			getStat().addExpAndSp(Math.round(addToExp * Config.SINEATER_XP_RATE), addToSp);
-		}
-		else
-		{
-			getStat().addExpAndSp(Math.round(addToExp * Config.PET_XP_RATE), addToSp);
-		}
+		getStat().addExpAndSp(Math.round(addToExp * (isSinEater() ? Config.SINEATER_XP_RATE : Config.PET_XP_RATE)), addToSp);
+	}
+	
+	public boolean isSinEater()
+	{
+		return getId() == 12564;
 	}
 	
 	@Override
@@ -1003,9 +1032,65 @@ public class L2PetInstance extends L2Summon
 	}
 	
 	@Override
+	public final boolean addLevel(int value)
+	{
+		if ((getLevel() + value) > getStat().getMaxLevel())
+		{
+			return false;
+		}
+		
+		boolean levelIncreased = getStat().addLevel(value);
+		onLevelChange(levelIncreased);
+		return levelIncreased;
+	}
+	
+	@Override
+	public long getExp()
+	{
+		return getStat().getExp();
+	}
+	
+	public void setExp(long exp)
+	{
+		getStat().setExp(exp);
+	}
+	
+	public void setSp(int sp)
+	{
+		getStat().setSp(sp);
+	}
+	
+	@Override
+	public void onLevelChange(boolean levelIncreased)
+	{
+		StatusUpdate su = new StatusUpdate(getStat().getActiveChar());
+		su.addAttribute(StatusUpdate.LEVEL, getLevel());
+		su.addAttribute(StatusUpdate.MAX_HP, getMaxHp());
+		su.addAttribute(StatusUpdate.MAX_MP, getMaxMp());
+		getStat().getActiveChar().broadcastPacket(su);
+		if (levelIncreased)
+		{
+			getStat().getActiveChar().broadcastPacket(new SocialAction(getObjectId(), SocialAction.LEVEL_UP));
+		}
+		// Send a Server->Client packet PetInfo to the L2PcInstance
+		getStat().getActiveChar().updateAndBroadcastStatus(1);
+		
+		if (getStat().getActiveChar().getControlItem() != null)
+		{
+			getStat().getActiveChar().getControlItem().setEnchantLevel(getLevel());
+		}
+	}
+	
+	@Override
 	public final int getLevel()
 	{
 		return getStat().getLevel();
+	}
+	
+	@Override
+	public int getMinLevel()
+	{
+		return PetDataTable.getInstance().getPetMinLevel((this).getTemplate().getId());
 	}
 	
 	public int getMaxFed()
@@ -1050,7 +1135,7 @@ public class L2PetInstance extends L2Summon
 		int maxLoad = getMaxLoad();
 		if (maxLoad > 0)
 		{
-			long weightproc = (((getCurrentLoad() - getBonusWeightPenalty()) * 1000) / maxLoad);
+			long weightproc = (((getCurrentLoad() - getBonusWeightPenalty()) * 1000L) / maxLoad);
 			int newWeightPenalty;
 			if ((weightproc < 500) || getOwner().getDietMode())
 			{

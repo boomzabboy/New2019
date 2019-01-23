@@ -7,34 +7,31 @@ defaultTasks('clean', 'build')
 sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 configurations.all {
-    transitive = false
+	transitive = false
 }
 
 dependencies {
 	compile 'com.mchange:c3p0:0.9.5.2'
+	compile 'com.mchange:mchange-commons-java:0.2.12'
 	compile 'com.jolbox:bonecp:0.8.0.RELEASE'
-	compile 'com.sun.mail:javax.mail:1.5.6'
-	compile 'com.zaxxer:HikariCP:2.6.0'
-	compile 'mysql:mysql-connector-java:6.0.5'
-	compile 'org.mariadb.jdbc:mariadb-java-client:1.5.9'
+	compile 'com.sun.mail:javax.mail:1.6.0'
+	compile 'com.zaxxer:HikariCP:2.7.2'
+	compile 'mysql:mysql-connector-java:6.0.6'
+	compile 'org.mariadb.jdbc:mariadb-java-client:2.1.2'
 	compile 'org.bitlet:weupnp:0.1.4'
 	compile 'org.eclipse.jdt.core.compiler:ecj:4.4.2'
-	compile 'com.google.guava:guava:21.0'
+	compile 'com.google.code.gson:gson:2.8.2'
+	compile 'com.google.guava:guava:23.0'
 	compile 'org.python:jython:2.2.1'
-	compile 'org.slf4j:slf4j-api:1.7.23'
-	compile 'org.slf4j:slf4j-jdk14:1.7.23'
+	compile 'org.slf4j:slf4j-api:1.7.25'
+	compile 'org.slf4j:slf4j-jdk14:1.7.25'
 	compile fileTree(dir: 'dist/libs', include: '*.jar')
-	testCompile 'org.testng:testng:6.10'
-	testCompile 'com.beust:jcommander:1.48'
-	testCompile 'org.mockito:mockito-core:2.7.9'
-	testCompile 'net.bytebuddy:byte-buddy:1.6.8'
-	testCompile 'net.bytebuddy:byte-buddy-agent:1.6.8'
-	testCompile 'org.objenesis:objenesis:2.5.1'
-	testCompile 'org.jmockit:jmockit:1.30'
+	testCompile 'org.testng:testng:6.11'
+	testCompile 'org.jmockit:jmockit:1.35'
 }
 
 def generalManifest = manifest {
@@ -69,30 +66,31 @@ task loginJar(type: Jar, dependsOn: classes) {
 
 task configuratorJar(type: Jar, dependsOn: classes) {
 	from(sourceSets.main.output)
+
 	archiveName = 'L2J_Configurator.jar'
-	include('**/configurator/**')
-	include('**/i18n/**')
-	include('**/images/**')
-	exclude('**/accountmanager/**')
-	exclude('**/dbinstaller/**')
-	exclude('**/gameserver/**')
-	exclude('**/gsregistering/**')
-	exclude('**/log/**')
-	exclude('**/loginserver/**')
-	exclude('**/status/**')
-	exclude('**/util/**')
-	exclude('**/Config/**')
-	exclude('**/ConnectionFactory/**')
-	exclude('**/Server/**')
+
+	//include('/com/l2jserver/*.*')
+	//include('/com/l2jserver/util/**')
+	include('/com/l2jserver/tools/*.*')
+	include('/com/l2jserver/tools/util/**')
+	include('/com/l2jserver/tools/configurator/**')
+
+	include('/resources/*.*')
+	include('/resources/util/**')
+	include('/resources/tools/*.*')
+	include('/resources/tools/util/**')
+	include('/resources/tools/configurator/**')
+
 	manifest {
 		from(generalManifest)
-		attributes('Main-Class': 'com.l2jserver.tools.configurator.ConfigUserInterface')
+		attributes('Main-Class': 'com.l2jserver.tools.configurator.Configurator')
 	}
 }
 
 task dbInstLsJar(type: Jar, dependsOn: classes) {
 	from(sourceSets.main.output)
 	archiveName = 'dbinst_ls.jar'
+	include '**/tools/*'
 	include '**/dbinstaller/**'
 	include '**/images/**'
 	include '**/util/**'
@@ -107,6 +105,7 @@ task dbInstLsJar(type: Jar, dependsOn: classes) {
 task dbInstGsJar(type: Jar, dependsOn: classes) {
 	from(sourceSets.main.output)
 	archiveName = 'dbinst_gs.jar'
+	include '**/tools/*'
 	include('**/dbinstaller/**')
 	include('**/images/**')
 	include('**/util/**')
@@ -148,7 +147,7 @@ task zip(type: Zip, dependsOn: build) {
 build.finalizedBy(zip)
 
 task wrapper(type: Wrapper) {
-	gradleVersion = '3.4'
+	gradleVersion = '3.5'
 }
 
 eclipse {

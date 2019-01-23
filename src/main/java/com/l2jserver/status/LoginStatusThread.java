@@ -19,21 +19,19 @@
 package com.l2jserver.status;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.Properties;
+import java.net.UnknownHostException;
 import java.util.logging.Logger;
 
 import com.l2jserver.Config;
 import com.l2jserver.loginserver.GameServerTable;
 import com.l2jserver.loginserver.L2LoginServer;
 import com.l2jserver.loginserver.LoginController;
+import com.l2jserver.util.PropertiesParser;
 
 public final class LoginStatusThread extends Thread
 {
@@ -86,24 +84,21 @@ public final class LoginStatusThread extends Thread
 			telnetOutput(2, "");
 		}
 		
-		final File file = new File(Config.TELNET_FILE);
-		try (InputStream telnetIS = new FileInputStream(file))
+		PropertiesParser telnetSettings = new PropertiesParser(Config.TELNET_FILE);
+		String HostList = telnetSettings.getString("ListOfHosts", "127.0.0.1,localhost,::1");
+		
+		if (Config.DEVELOPER)
 		{
-			Properties telnetSettings = new Properties();
-			telnetSettings.load(telnetIS);
-			
-			String HostList = telnetSettings.getProperty("ListOfHosts", "127.0.0.1,localhost,::1");
-			
-			if (Config.DEVELOPER)
+			telnetOutput(3, "Comparing ip to list...");
+		}
+		
+		// compare
+		String ipToCompare = null;
+		for (String ip : HostList.split(","))
+		{
+			if (!result)
 			{
-				telnetOutput(3, "Comparing ip to list...");
-			}
-			
-			// compare
-			String ipToCompare = null;
-			for (String ip : HostList.split(","))
-			{
-				if (!result)
+				try
 				{
 					ipToCompare = InetAddress.getByName(ip).getHostAddress();
 					if (clientStringIP.equals(ipToCompare))
@@ -115,15 +110,16 @@ public final class LoginStatusThread extends Thread
 						telnetOutput(3, clientStringIP + " = " + ipToCompare + "(" + ip + ") = " + result);
 					}
 				}
+				catch (UnknownHostException e)
+				{
+					if (Config.DEVELOPER)
+					{
+						telnetOutput(4, "");
+					}
+					
+					telnetOutput(1, "Error: " + e);
+				}
 			}
-		}
-		catch (IOException e)
-		{
-			if (Config.DEVELOPER)
-			{
-				telnetOutput(4, "");
-			}
-			telnetOutput(1, "Error: " + e);
 		}
 		
 		if (Config.DEVELOPER)

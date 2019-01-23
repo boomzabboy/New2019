@@ -62,15 +62,21 @@ import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerLevel
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerLogin;
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerLogout;
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerPKChanged;
+import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerProfessionCancel;
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerProfessionChange;
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerPvPChanged;
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerPvPKill;
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerRestore;
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerSelect;
+import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerSit;
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerSkillLearn;
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerSummonSpawn;
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerSummonTalk;
 import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerTransform;
+import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerTutorialClientEvent;
+import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerTutorialCmd;
+import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerTutorialEvent;
+import com.l2jserver.gameserver.model.events.impl.character.player.OnPlayerTutorialQuestionMark;
 import com.l2jserver.gameserver.model.events.impl.character.player.clan.OnPlayerClanCreate;
 import com.l2jserver.gameserver.model.events.impl.character.player.clan.OnPlayerClanDestroy;
 import com.l2jserver.gameserver.model.events.impl.character.player.clan.OnPlayerClanJoin;
@@ -173,6 +179,13 @@ public enum EventType
 	ON_PLAYER_AUGMENT(OnPlayerAugment.class, void.class),
 	ON_PLAYER_BYPASS(OnPlayerBypass.class, void.class),
 	ON_PLAYER_CHAT(OnPlayerChat.class, void.class, ChatFilterReturn.class),
+	
+	// Tutorial events
+	ON_PLAYER_TUTORIAL_EVENT(OnPlayerTutorialEvent.class, void.class, void.class),
+	ON_PLAYER_TUTORIAL_CMD(OnPlayerTutorialCmd.class, void.class, void.class),
+	ON_PLAYER_TUTORIAL_CLIENT_EVENT(OnPlayerTutorialClientEvent.class, void.class, void.class),
+	ON_PLAYER_TUTORIAL_QUESTION_MARK(OnPlayerTutorialQuestionMark.class, void.class, void.class),
+	
 	// Clan events
 	ON_PLAYER_CLAN_CREATE(OnPlayerClanCreate.class, void.class),
 	ON_PLAYER_CLAN_DESTROY(OnPlayerClanDestroy.class, void.class),
@@ -205,11 +218,14 @@ public enum EventType
 	ON_PLAYER_LOGOUT(OnPlayerLogout.class, void.class),
 	ON_PLAYER_PK_CHANGED(OnPlayerPKChanged.class, void.class),
 	ON_PLAYER_PROFESSION_CHANGE(OnPlayerProfessionChange.class, void.class),
+	ON_PLAYER_PROFESSION_CANCEL(OnPlayerProfessionCancel.class, void.class),
 	ON_PLAYER_PVP_CHANGED(OnPlayerPvPChanged.class, void.class),
 	ON_PLAYER_PVP_KILL(OnPlayerPvPKill.class, void.class),
 	ON_PLAYER_RESTORE(OnPlayerRestore.class, void.class),
 	ON_PLAYER_SELECT(OnPlayerSelect.class, void.class, TerminateReturn.class),
+	ON_PLAYER_SIT(OnPlayerSit.class, TerminateReturn.class),
 	ON_PLAYER_SKILL_LEARN(OnPlayerSkillLearn.class, void.class),
+	ON_PLAYER_STAND(OnPlayerSit.class, TerminateReturn.class),
 	ON_PLAYER_SUMMON_SPAWN(OnPlayerSummonSpawn.class, void.class),
 	ON_PLAYER_SUMMON_TALK(OnPlayerSummonTalk.class, void.class),
 	ON_PLAYER_TRANSFORM(OnPlayerTransform.class, void.class),
