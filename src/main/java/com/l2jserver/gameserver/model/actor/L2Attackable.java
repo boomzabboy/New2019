@@ -67,7 +67,6 @@ import com.l2jserver.gameserver.model.holders.ItemHolder;
 import com.l2jserver.gameserver.model.items.L2Item;
 import com.l2jserver.gameserver.model.items.instance.L2ItemInstance;
 import com.l2jserver.gameserver.model.skills.Skill;
-import com.l2jserver.gameserver.model.stats.Stats;
 import com.l2jserver.gameserver.network.SystemMessageId;
 import com.l2jserver.gameserver.network.clientpackets.Say2;
 import com.l2jserver.gameserver.network.serverpackets.CreatureSay;
@@ -199,7 +198,7 @@ public class L2Attackable extends L2Npc
 			return;
 		}
 		
-		if ((getCurrentMp() < (getStat().getMpConsume(skill) + getStat().getMpInitialConsume(skill))) || (getCurrentHp() <= skill.getHpConsume()))
+		if ((getCurrentMp() < (getStat().getMpConsume1(skill) + getStat().getMpConsume2(skill))) || (getCurrentHp() <= skill.getHpConsume()))
 		{
 			return;
 		}
@@ -492,11 +491,8 @@ public class L2Attackable extends L2Npc
 							// Distribute the Exp and SP between the L2PcInstance and its L2Summon
 							if (!attacker.isDead())
 							{
-								final long addexp = Math.round(attacker.calcStat(Stats.EXPSP_RATE, exp, null, null));
-								final int addsp = (int) attacker.calcStat(Stats.EXPSP_RATE, sp, null, null);
-								
-								attacker.addExpAndSp(addexp, addsp, useVitalityRate());
-								if (addexp > 0)
+								attacker.addExpAndSp(exp, sp, useVitalityRate());
+								if (exp > 0)
 								{
 									attacker.updateVitalityPoints(getVitalityPoints(damage), true, false);
 								}
@@ -1630,12 +1626,7 @@ public class L2Attackable extends L2Npc
 	 */
 	public boolean useVitalityRate()
 	{
-		if (isChampion() && !Config.L2JMOD_CHAMPION_ENABLE_VITALITY)
-		{
-			return false;
-		}
-		
-		return true;
+		return isChampion() ? Config.L2JMOD_CHAMPION_ENABLE_VITALITY : true;
 	}
 	
 	/** Return True if the L2Character is RaidBoss or his minion. */

@@ -19,15 +19,12 @@
 package com.l2jserver.gameserver.model.actor.templates;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import com.l2jserver.gameserver.data.xml.impl.ExperienceData;
-import com.l2jserver.gameserver.model.Location;
+import com.l2jserver.Config;
 import com.l2jserver.gameserver.model.StatsSet;
 import com.l2jserver.gameserver.model.base.ClassId;
 import com.l2jserver.gameserver.model.itemcontainer.Inventory;
-import com.l2jserver.util.Rnd;
 
 /**
  * @author mkizub, Zoey76
@@ -49,20 +46,19 @@ public class L2PcTemplate extends L2CharTemplate
 	
 	private final int _baseSafeFallHeight;
 	
-	private final List<Location> _creationPoints;
 	private final Map<Integer, Integer> _baseSlotDef;
 	
-	public L2PcTemplate(StatsSet set, List<Location> creationPoints)
+	public L2PcTemplate(StatsSet set)
 	{
 		super(set);
 		_classId = ClassId.getClassId(set.getInt("classId"));
 		setRace(_classId.getRace());
-		_baseHp = new float[ExperienceData.getInstance().getMaxLevel()];
-		_baseMp = new float[ExperienceData.getInstance().getMaxLevel()];
-		_baseCp = new float[ExperienceData.getInstance().getMaxLevel()];
-		_baseHpReg = new double[ExperienceData.getInstance().getMaxLevel()];
-		_baseMpReg = new double[ExperienceData.getInstance().getMaxLevel()];
-		_baseCpReg = new double[ExperienceData.getInstance().getMaxLevel()];
+		_baseHp = new float[Config.MAX_PLAYER_LEVEL + 1];
+		_baseMp = new float[Config.MAX_PLAYER_LEVEL + 1];
+		_baseCp = new float[Config.MAX_PLAYER_LEVEL + 1];
+		_baseHpReg = new double[Config.MAX_PLAYER_LEVEL + 1];
+		_baseMpReg = new double[Config.MAX_PLAYER_LEVEL + 1];
+		_baseCpReg = new double[Config.MAX_PLAYER_LEVEL + 1];
 		
 		_baseSlotDef = new HashMap<>(12);
 		_baseSlotDef.put(Inventory.PAPERDOLL_CHEST, set.getInt("basePDefchest", 0));
@@ -82,7 +78,6 @@ public class L2PcTemplate extends L2CharTemplate
 		_fCollisionHeightFemale = set.getDouble("collisionFemaleheight");
 		
 		_baseSafeFallHeight = set.getInt("baseSafeFall", 333);
-		_creationPoints = creationPoints;
 	}
 	
 	/**
@@ -91,14 +86,6 @@ public class L2PcTemplate extends L2CharTemplate
 	public ClassId getClassId()
 	{
 		return _classId;
-	}
-	
-	/**
-	 * @return random Location of created character spawn.
-	 */
-	public Location getCreationPoint()
-	{
-		return _creationPoints.get(Rnd.get(_creationPoints.size()));
 	}
 	
 	/**
