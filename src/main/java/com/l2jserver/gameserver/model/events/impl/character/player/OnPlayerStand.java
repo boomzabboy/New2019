@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Server
+ * Copyright (C) 2004-2017 L2J Server
  * 
  * This file is part of L2J Server.
  * 
@@ -16,29 +16,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.l2jserver.tools.dbinstaller;
+package com.l2jserver.gameserver.model.events.impl.character.player;
+
+import com.l2jserver.gameserver.model.actor.instance.L2PcInstance;
+import com.l2jserver.gameserver.model.events.EventType;
+import com.l2jserver.gameserver.model.events.impl.IBaseEvent;
 
 /**
- * Abstract Database Launcher.
- * @author Zoey76
+ * @author Zealar
+ * @since 2.6.0.0
  */
-public abstract class AbstractDBLauncher
+public class OnPlayerStand implements IBaseEvent
 {
-	protected static String getArg(String arg, String[] args)
+	private final L2PcInstance _activeChar;
+	
+	public OnPlayerStand(L2PcInstance activeChar)
 	{
-		try
-		{
-			int i = 0;
-			do
-			{
-				// Nothing is missing here.
-			}
-			while (!arg.equalsIgnoreCase(args[i++]));
-			return args[i];
-		}
-		catch (Exception e)
-		{
-			return null;
-		}
+		_activeChar = activeChar;
+	}
+	
+	public L2PcInstance getActiveChar()
+	{
+		return _activeChar;
+	}
+	
+	@Override
+	public EventType getType()
+	{
+		return EventType.ON_PLAYER_STAND;
 	}
 }

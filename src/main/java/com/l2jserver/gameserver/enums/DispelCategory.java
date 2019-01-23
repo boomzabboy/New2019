@@ -16,34 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.l2jserver.tools.dbinstaller.util;
-
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+package com.l2jserver.gameserver.enums;
 
 /**
- * @author mrTJO
+ * @author Zealar
  */
-public class FileWriterStdout extends BufferedWriter
+public enum DispelCategory
 {
-	public FileWriterStdout(FileWriter fileWriter)
-	{
-		super(fileWriter);
-	}
-	
-	public void println() throws IOException
-	{
-		append(System.getProperty("line.separator"));
-	}
-	
-	public void println(String line) throws IOException
-	{
-		append(line + System.getProperty("line.separator"));
-	}
-	
-	public void print(String text) throws IOException
-	{
-		append(text);
-	}
+	ALL,
+	BUFF,
+	DEBUFF
 }

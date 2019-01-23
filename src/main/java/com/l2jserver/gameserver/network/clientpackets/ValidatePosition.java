@@ -19,6 +19,7 @@
 package com.l2jserver.gameserver.network.clientpackets;
 
 import com.l2jserver.Config;
+import com.l2jserver.gameserver.GeoData;
 import com.l2jserver.gameserver.model.L2World;
 import com.l2jserver.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jserver.gameserver.model.zone.ZoneId;
@@ -108,6 +109,17 @@ public class ValidatePosition extends L2GameClientPacket
 			// sendPacket(new GetOnVehicle(activeChar.getObjectId(), _data, activeChar.getInBoatPosition()));
 			// }
 			// }
+			return;
+		}
+		
+		if (GeoData.getInstance().hasGeo(realX, realY) && (_z < realZ) && (Math.abs(realZ - _z) > 100))
+		{
+			// This code is here to set players, which has fallen below the texture client side, back to the surface.
+			
+			// TODO: When running down hills where you can't stand this code will make the player jump around!
+			// If its reliably possible add an algorithm to movement code to make a character fall down server side based on geo data.
+			// If not, packets which report the client side position must be analyzed and synch between client and server position must be improoved.
+			activeChar.sendPacket(new ValidateLocation(activeChar));
 			return;
 		}
 		

@@ -1521,7 +1521,7 @@ public class L2AttackableAI extends L2CharacterAI implements Runnable
 			}
 		}
 		
-		if (sk.hasEffectType(L2EffectType.PHYSICAL_ATTACK, L2EffectType.PHYSICAL_ATTACK_HP_LINK, L2EffectType.MAGICAL_ATTACK, L2EffectType.DEATH_LINK, L2EffectType.HP_DRAIN))
+		if (sk.hasEffectType(L2EffectType.PHYSICAL_ATTACK, L2EffectType.MAGICAL_ATTACK, L2EffectType.HP_DRAIN))
 		{
 			if (!canAura(sk))
 			{
@@ -1880,7 +1880,7 @@ public class L2AttackableAI extends L2CharacterAI implements Runnable
 			return false;
 		}
 		// Not enough MP.
-		if (skill.getMpConsume() >= caster.getCurrentMp())
+		if (skill.getMpConsume2() >= caster.getCurrentMp())
 		{
 			return false;
 		}
